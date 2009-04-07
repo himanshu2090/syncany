@@ -1,0 +1,91 @@
+<ui version="4.0" >
+ <class>QtAppClass</class>
+ <widget class="QDialog" name="QtAppClass" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>QtApp</string>
+  </property>
+  <widget class="QTextEdit" name="textLogger" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>250</y>
+     <width>581</width>
+     <height>141</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>20</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>PushButton</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnSend" >
+   <property name="geometry" >
+    <rect>
+     <x>510</x>
+     <y>210</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Send</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="textInput" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>170</y>
+     <width>491</width>
+     <height>64</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>140</y>
+     <width>111</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Protocol Tester</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnClear" >
+   <property name="geometry" >
+    <rect>
+     <x>510</x>
+     <y>180</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Clear</string>
+   </property>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <resources/>
+ <connections/>
+</ui>
