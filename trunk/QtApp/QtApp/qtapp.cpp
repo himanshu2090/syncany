@@ -26,7 +26,7 @@ void QtApp::on_pushButton_clicked()
 
 void QtApp::on_btnSend_clicked()
 {
-	QString strContent=ui.textInput->text();
+	QString strContent=ui.textInput->toPlainText();
 	ui.textInput->setPlainText("");
 	strContent.remove('\r');
 	client.sendData(strContent+"\n");

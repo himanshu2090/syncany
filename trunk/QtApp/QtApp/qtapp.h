@@ -22,6 +22,7 @@ private slots:
 	void on_btnClear_clicked();
 	void on_btnSend_clicked();
 	void on_pushButton_clicked();
+	void log(QString str);
 	void login(QString str);
 	void logout(QString str);
 };
