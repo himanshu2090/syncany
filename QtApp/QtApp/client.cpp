@@ -3,43 +3,87 @@
 Client::Client(QObject *parent)
 	: QObject(parent)
 {
-	/*
-	void connected ()
-	void disconnected ()
-	void error ( QAbstractSocket::SocketError socketError )
-	void hostFound ()
-	void stateChanged ( QAbstractSocket::SocketState socketState )
-	*/
-	connect(&m_sock,SIGNAL(connected()),this,SLOT(connected()))
+	m_sock=0;
 }
 
 Client::~Client()
 {
+	if(m_sock!=0)
+		delete m_sock;
+}
+
+void Client::connectSignal()
+{
+	connect(m_sock,SIGNAL(connected()),this,SLOT(connected()));
+	connect(m_sock,SIGNAL(disconnected()),this,SLOT(disconnected()));
+	connect(m_sock,SIGNAL(readyRead()), this, SLOT(readData()));
+	connect(m_sock,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
+	connect(m_sock,SIGNAL(stateChanged(QAbstractSocket::SocketError)),this,SLOT(stateChanged(QAbstractSocket::SocketError)));
+}
+
+void Client::ConnectHost(QString host,quint32 port)
+{
+	if(m_sock!=0)
+	{
+		if(m_sock->state()!=QTcpSocket::UnconnectedState)
+			m_sock->disconnectFromHost();
+		delete m_sock;
+		m_sock=0;
+	}
+	if(m_sock==0)
+		m_sock=new QTcpSocket();
+	connectSignal();
+	m_sock->connectToHost(host,port);
+}
+
+void Client::DisconnectHost()
+{
+	if(m_sock!=0)
+	{
+		m_sock->disconnectFromHost();
+	}
 
 }
 
+
 void Client::connected ()
 {
-
+	emit sigLogger("connected!");
 }
 
 void Client::disconnected ()
 {
-
+	emit sigLogger("disconnected!");
 }
 
-void Client::error ( QAbstractSocket::SocketError socketError )
+void Client::error ( QTcpSocket::SocketError socketError )
 {
-
+	emit sigLogger(QString("connected!%1").arg(socketError));
 }
 
 void Client::hostFound ()
 {
-
+	emit sigLogger("hostFound!");
 }
 
-void Client::stateChanged ( QAbstractSocket::SocketState socketState )
+void Client::stateChanged ( QTcpSocket::SocketState socketState )
 {
-
+	emit sigLogger(QString("connected!%1").arg(socketState));
 }
 
+void Client::readData()
+{
+	QString str=m_sock->readAll();
+	emit sigIn(QString("RECV:%1").arg(str));
+}
+
+void Client::sendData(QString str)
+{
+	if(m_sock && m_sock->state()==QTcpSocket::ConnectedState)
+	{
+		m_sock->write(str.toAscii());
+		emit sigOut(QString("SEND:%1").arg(str));
+	}
+	else
+		emit sigLogger(QString("SEND:%s fail! server is not connected!").arg(str));
+}
