@@ -36,6 +36,7 @@ void QtApp::on_btnClear_clicked()
 {
 	ui.textLogger->setPlainText("");
 	ui.textLoggerIn->setPlainText("");
+	ui.textLoggerOut->setPlainText("");
 }
 
 void QtApp::log(QString str)
