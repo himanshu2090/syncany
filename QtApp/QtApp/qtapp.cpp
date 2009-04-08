@@ -7,7 +7,7 @@ QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 	ui.setupUi(this);
 	connect(&client,SIGNAL(sigLogger(QString)),this,SLOT(log(QString)));
 	connect(&client,SIGNAL(sigIn(QString)),this,SLOT(login(QString)));
-	connect(&client,SIGNAL(sigOut(QString)),this,SLOT(logou(QString)));
+	connect(&client,SIGNAL(sigOut(QString)),this,SLOT(logout(QString)));
 	ui.textPort->setText("80");
 	ui.textHost->setText("www.g.cn");
 	ui.pushButton->hide();

@@ -74,7 +74,7 @@ void Client::stateChanged ( QTcpSocket::SocketState socketState )
 void Client::readData()
 {
 	QString str=m_sock->readAll();
-	emit sigIn(QString("RECV:%1").arg(str));
+	emit sigIn(str);
 }
 
 void Client::sendData(QString str)
@@ -82,7 +82,7 @@ void Client::sendData(QString str)
 	if(m_sock && m_sock->state()==QTcpSocket::ConnectedState)
 	{
 		m_sock->write(str.toAscii());
-		emit sigOut(QString("SEND:%1").arg(str));
+		emit sigOut(str);
 	}
 	else
 		emit sigLogger(QString("SEND:%s fail! server is not connected!").arg(str));
