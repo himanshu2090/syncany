@@ -58,7 +58,7 @@ void Client::disconnected ()
 
 void Client::error ( QTcpSocket::SocketError socketError )
 {
-	emit sigLogger(QString("connected!%1").arg(socketError));
+	emit sigLogger(QString("error:[%1][%s]").arg(socketError).arg(m_sock->errorString()));
 }
 
 void Client::hostFound ()
@@ -68,7 +68,7 @@ void Client::hostFound ()
 
 void Client::stateChanged ( QTcpSocket::SocketState socketState )
 {
-	emit sigLogger(QString("connected!%1").arg(socketState));
+	emit sigLogger(QString("stateChanged!%1").arg(socketState));
 }
 
 void Client::readData()

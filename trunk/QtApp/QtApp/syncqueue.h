@@ -1,7 +1,7 @@
 #ifndef SYNCQUEUE_H
 #define SYNCQUEUE_H
 
-#include <QObject>
+#include <QtCore/QtCore>
 #include "CppSQLite3.h"
 
 class SyncQueue : public QObject
@@ -11,12 +11,15 @@ class SyncQueue : public QObject
 public:
 	SyncQueue(QObject *parent=0,int type=0);
 	~SyncQueue();
-
+	
 private:
 	void createTable()
 	{
-		QString strSql;
-		strSql.sprintf("CREATE TABLE [%s] (\n"
+		QMutexLocker locker(&m_locker);
+		QString strTableName=(m_type==0)?"sqin":"sqout";
+		if(m_db.tableExists(strTableName.toStdString().c_str()))
+			return ;
+		QString strSql="CREATE TABLE [%1] (\n"
 			"[id] AUTOINC, \n"
 			"[cmd_id] INT NOT NULL, \n"
 			"[tag] INT NOT NULL DEFAULT 0, \n"
@@ -24,8 +27,9 @@ private:
 			"[cmd_ret] VARCHAR, \n"
 			"[begin_time] DATETIME, \n"
 			"[end_time] DATETIME, \n"
-			"CONSTRAINT [sqlite_autoindex_sqin_1] PRIMARY KEY ([cmd_id]));\n",(m_type==0)?"sqin":"sqout");
-
+			"CONSTRAINT [sqlite_autoindex_%1_1] PRIMARY KEY ([cmd_id]));\n";
+		strSql.arg(strTableName);
+		m_db.execDML(strSql.toStdString().c_str());
 	}
 
 public slots:
@@ -34,7 +38,8 @@ public slots:
 
 private:
 	int m_type;
-
+	QMutex m_locker;
+	CppSQLite3DB m_db;
 };
 
 //√¸¡Ó∂”¡–
