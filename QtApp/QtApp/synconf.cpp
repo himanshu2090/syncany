@@ -14,13 +14,14 @@ Synconf::~Synconf()
 
 Synconf * Synconf::instance()
 {
-	QMutexLocker locker(&g_locker);
+	QMutexLocker locker(&g_synconf_locker);
 	if(m_instance==0)
 	{
 		m_instance = new Synconf(0);
 	}
 	return m_instance;
 }
+
 
 //应该监视配置文件是否被修改，在被修改的时候重新载入
 void Synconf::load_conf()
@@ -75,3 +76,45 @@ void Synconf::setstr(QString strKey,QString strValue,bool flush) //设置配置项
 	if(flush)
 		save_conf();
 }
+
+
+QString Synconf::getOsVersionString()
+{
+#if defined(Q_WS_WIN) || defined(Q_OS_CYGWIN)
+	switch(QSysInfo::windowsVersion())
+	{
+	case QSysInfo::WV_32s:
+		return "Windows 3.1 with Win32s";
+	case QSysInfo::WV_95:
+		return "Windows 95";
+	case QSysInfo::WV_98:
+		return "Windows 98";
+	case QSysInfo::WV_Me:
+		return "Windows Me";
+	case QSysInfo::WV_DOS_based:
+		return "MS-DOS-based version of Windows";
+	case QSysInfo::WV_NT:
+		return "Windows NT";
+	case QSysInfo::WV_2000:
+		return "Windows 2000";
+	case QSysInfo::WV_XP:
+		return "Windows XP";
+	case QSysInfo::WV_VISTA:
+		return "Windows VISTA";
+	case QSysInfo::WV_NT_based:
+		return "NT-based version of Windows";
+	case QSysInfo::WV_CE:
+		return "Windows CE";
+	case QSysInfo::WV_CENET:
+		return "Windows CE .NET";
+	case QSysInfo::WV_CE_5:
+		return "Windows CE 5.x";
+	case QSysInfo::WV_CE_6:
+		return "Windows CE 6.x";
+	case QSysInfo::WV_CE_based:
+		return "CE-based version of Windows";
+	}
+#endif	
+	return "Unknown OS";
+}
+
