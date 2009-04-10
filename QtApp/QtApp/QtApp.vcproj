@@ -297,10 +297,10 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="Moc&apos;ing syncqueue.h..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -DUNICODE -DWIN32 -DQT_THREAD_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_NETWORK_LIB -I&quot;.\GeneratedFiles\.&quot; -I&quot;$(QTDIR)\include\.&quot; -I&quot;.\GeneratedFiles\$(ConfigurationName)\.&quot; -I&quot;.\.&quot; -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\QtXml\.&quot; -I&quot;$(QTDIR)\include\QtNetwork\.&quot; &quot;.\syncqueue.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_syncqueue.cpp&quot;&#x0D;&#x0A;"
-						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;.\syncqueue.h"
-						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_syncqueue.cpp&quot;"
+						Description="Moc&apos;ing syncdb.h..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -DUNICODE -DWIN32 -DQT_THREAD_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_NETWORK_LIB -I&quot;.\GeneratedFiles\.&quot; -I&quot;$(QTDIR)\include\.&quot; -I&quot;.\GeneratedFiles\$(ConfigurationName)\.&quot; -I&quot;.\.&quot; -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\QtXml\.&quot; -I&quot;$(QTDIR)\include\QtNetwork\.&quot; &quot;.\syncdb.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_syncdb.cpp&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;.\syncdb.h"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_syncdb.cpp&quot;"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -308,10 +308,10 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="Moc&apos;ing syncqueue.h..."
-						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -DUNICODE -DWIN32 -DQT_THREAD_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_NETWORK_LIB -I&quot;.\GeneratedFiles\.&quot; -I&quot;$(QTDIR)\include\.&quot; -I&quot;.\GeneratedFiles\$(ConfigurationName)\.&quot; -I&quot;.\.&quot; -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\QtXml\.&quot; -I&quot;$(QTDIR)\include\QtNetwork\.&quot; &quot;.\syncqueue.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_syncqueue.cpp&quot;&#x0D;&#x0A;"
-						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;.\syncqueue.h"
-						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_syncqueue.cpp&quot;"
+						Description="Moc&apos;ing syncdb.h..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  -DUNICODE -DWIN32 -DQT_THREAD_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_NETWORK_LIB -I&quot;.\GeneratedFiles\.&quot; -I&quot;$(QTDIR)\include\.&quot; -I&quot;.\GeneratedFiles\$(ConfigurationName)\.&quot; -I&quot;.\.&quot; -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\QtXml\.&quot; -I&quot;$(QTDIR)\include\QtNetwork\.&quot; &quot;.\syncdb.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_syncdb.cpp&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;.\syncdb.h"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_syncdb.cpp&quot;"
 					/>
 				</FileConfiguration>
 			</File>
