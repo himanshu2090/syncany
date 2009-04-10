@@ -2,12 +2,13 @@
 #include "synconf.h"
 
 SyncDB * SyncDB::m_instance=0;
+QMutex g_locker_db;
 
-SyncDB::SyncDB(QObject *parent,int type)
-	: QObject(parent),m_type(type)
+SyncDB::SyncDB(QObject *parent)
+	: QObject(parent)
 {
 	m_dbFile=Synconf::instance()->getstr("work_dir")+"syncdb";
-	m_db.open(m_dbFile);
+	m_db.open(m_dbFile.toStdString().c_str());
 	createTable();
 }
 
@@ -21,7 +22,7 @@ SyncDB *SyncDB::instance()
 	QMutexLocker locker(&g_locker_db);
 	if(!m_instance)
 	{
-		m_instance=new SyncDB();
+		m_instance=new SyncDB(0);
 	}
 	return m_instance;
 }
