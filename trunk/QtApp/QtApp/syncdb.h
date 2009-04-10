@@ -5,7 +5,7 @@
 #include "CppSQLite3.h"
 
 //接收和发送队列，构造为一个单体类来提供数据持久化支持
-QMutex g_locker_db;
+
 
 class SyncDB : public QObject
 {
