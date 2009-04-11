@@ -9,10 +9,10 @@ QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 	synconf=Synconf::instance();
 	QString svrhost=synconf->getstr("server_host","5.40.92.214");
 	QString svrport=synconf->getstr("server_port","18120");
-	synconf->setstr("server_host",svrhost);
+	synconf->setstr("server_host",svrhost,false);
 	synconf->setstr("server_port",svrport);
-	ui.textPort->setText(svrhost);
-	ui.textHost->setText(svrport);
+	ui.textHost->setText(svrhost);
+	ui.textPort->setText(svrport);
 	sm=new SessionManager(this);
 }
 

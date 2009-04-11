@@ -56,6 +56,11 @@ void Synconf::save_conf()
 		strConfig+=it.key()+"="+it.value()+"\n";
 		++it;
 	}
+	QString strConfigFile=QDir::currentPath()+"/synconf.ini";
+	QFile qf(strConfigFile);
+	qf.open(QIODevice::Truncate | QIODevice::WriteOnly | QIODevice::Text);
+	qf.write(strConfig.toAscii());
+	qf.close();
 }
 
 void Synconf::init_default()//将有默认值但未设置的项设置为默认值
@@ -68,7 +73,7 @@ void Synconf::init_default()//将有默认值但未设置的项设置为默认值
 QString Synconf::getstr(QString strKey,QString strDefault)//获取配置项内容
 {
 	if(m_config.find(strKey)==m_config.end())
-		return "";
+		return strDefault;
 	return m_config[strKey];
 }
 
