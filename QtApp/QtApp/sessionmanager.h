@@ -17,12 +17,15 @@ public:
 	//公开接口和槽，全部要使用锁同步线程
 public:
 	QString generate_cmdid();
+signals:
 	void sigLogger(QString);
 
 public slots:
 	void heartbeat();
 	void ConnectHost();
 	void DisconnectHost();
+	void client_connected(Client *cl);
+	void client_disconnected(Client *cl);
 private:
 	bool bAutoConnectHost;
 	QString svrhost;
@@ -33,6 +36,7 @@ private:
 	quint32 heartbeat_count;
 	quint32 heartbeat_interval;
 	QMutex m_locker; //普通锁，同步对自身资源的操作
+public:
 	Client client;
 };
 

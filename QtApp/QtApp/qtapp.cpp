@@ -2,15 +2,18 @@
 
 QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 	: QDialog(parent, flags)
-	,client(this)
+	,sm(this)
 {
 	ui.setupUi(this);
-	connect(&client,SIGNAL(sigLogger(QString)),this,SLOT(log(QString)));
-	connect(&client,SIGNAL(sigIn(QString)),this,SLOT(login(QString)));
-	connect(&client,SIGNAL(sigOut(QString)),this,SLOT(logout(QString)));
-	ui.textPort->setText("80");
-	ui.textHost->setText("www.g.cn");
 	ui.pushButton->hide();
+	syncdb=SyncDB::instance();
+	synconf=Synconf::instance();
+	QString svrhost=synconf->getstr("server_host","5.40.92.214");
+	QString svrport=synconf->getstr("server_port","18120");
+	synconf->setstr("server_host",svrhost);
+	synconf->setstr("server_port",svrport);
+	ui.textPort->setText(svrhost);
+	ui.textHost->setText(svrport);
 }
 
 QtApp::~QtApp()
@@ -29,7 +32,7 @@ void QtApp::on_btnSend_clicked()
 	QString strContent=ui.textInput->toPlainText();
 	ui.textInput->setPlainText("");
 	strContent.remove('\r');
-	client.sendData(strContent+"\n");
+	sm.client.sendData(strContent+"\n");
 }
 
 void QtApp::on_btnClear_clicked()
@@ -56,11 +59,11 @@ void QtApp::logout(QString str)
 
 void QtApp::on_btnConnect_clicked()
 {
-	client.DisconnectHost();
-	client.ConnectHost(ui.textHost->text(),ui.textPort->text().toInt());
+	//应该更新HOST地址和端口
+	sm.ConnectHost();
 }
 
 void QtApp::on_btnDisconnect_clicked()
 {
-	client.DisconnectHost();
+	sm.DisconnectHost();
 }

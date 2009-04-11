@@ -1,19 +1,14 @@
 #ifndef SYNCONF_H
 #define SYNCONF_H
 
-#include <QtCore/QtCore>
-//#include <QObject>
-//#include <QMutex>
-//#include <QMap>
+#include "common.h"
 
 //配置项，单体类
-static QMutex g_synconf_locker;
 class Synconf : public QObject
 {
 	Q_OBJECT
 private:
-	Synconf(){}
-	Synconf(QObject *parent);
+	Synconf(QObject *parent=0);
 public:
 	~Synconf();
 private:
@@ -29,6 +24,8 @@ public:
 	static QString getOsVersionString();
 	QString getstr(QString strKey,QString strDefault=""); //获取配置项内容
 	void setstr(QString strKey,QString strValue,bool flush=true); //设置配置项
+
+	QString getinfo(QString strKey);//一些只读信息的获取
 };
 
 #endif // SYNCONF_H

@@ -90,16 +90,21 @@ void SessionManager::heartbeat()
 	if(++heartbeat_count > heartbeat_interval)
 	{
 		heartbeat_count=0;
-		client.say_ping();
+		client.say_ping(generate_cmdid());
 	}
 }
 
 void SessionManager::client_connected(Client *cl)
 {
-	cl.say_hello();
+	QMap<QString,QString> props;
+	//hello 101 syncany_client=2.1.0.0 protocol=1.0.1.0 platform=symbian-os-s60.3
+	props["syncany_client"]=synconf->getinfo("client_version");
+	props["protocol"]=synconf->getinfo("protocol_version");
+	props["platform"]=synconf->getinfo("os_version");
+	cl->say_hello(generate_cmdid(),props);
 }
 
-void SessionManager::client_disconnect(Client *cl)
+void SessionManager::client_disconnected(Client *cl)
 {
 }
 

@@ -1,6 +1,7 @@
 #include "synconf.h"
 
-Synconf *Synconf::m_instance=0;
+Synconf *Synconf::m_instance=null;
+QMutex g_locker_synconf;
 
 Synconf::Synconf(QObject *parent)
 	: QObject(parent)
@@ -14,8 +15,8 @@ Synconf::~Synconf()
 
 Synconf * Synconf::instance()
 {
-	QMutexLocker locker(&g_synconf_locker);
-	if(m_instance==0)
+	QMutexLocker locker(&g_locker_synconf);
+	if(m_instance==null)
 	{
 		m_instance = new Synconf(0);
 	}
@@ -77,7 +78,6 @@ void Synconf::setstr(QString strKey,QString strValue,bool flush) //…Ë÷√≈‰÷√œÓ
 		save_conf();
 }
 
-
 QString Synconf::getOsVersionString()
 {
 #if defined(Q_WS_WIN) || defined(Q_OS_CYGWIN)
@@ -118,3 +118,21 @@ QString Synconf::getOsVersionString()
 	return "Unknown OS";
 }
 
+
+
+QString  Synconf::getinfo(QString strKey)
+{
+	if(strKey=="client_version")
+	{
+		return "0.0.1";
+	}
+	if(strKey=="protocol_version")
+	{
+		return "0.0.1";
+	}
+	if(strKey=="os_version")
+	{
+		return getOsVersionString().replace(" ","_");
+	}
+	return "";
+}
