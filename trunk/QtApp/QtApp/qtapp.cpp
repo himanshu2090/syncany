@@ -2,7 +2,6 @@
 
 QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 	: QDialog(parent, flags)
-	,sm(this)
 {
 	ui.setupUi(this);
 	ui.pushButton->hide();
@@ -14,11 +13,13 @@ QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 	synconf->setstr("server_port",svrport);
 	ui.textPort->setText(svrhost);
 	ui.textHost->setText(svrport);
+	sm=new SessionManager(this);
 }
 
 QtApp::~QtApp()
 {
-
+	if(sm!=null)
+		delete sm;
 }
 
 
@@ -32,7 +33,8 @@ void QtApp::on_btnSend_clicked()
 	QString strContent=ui.textInput->toPlainText();
 	ui.textInput->setPlainText("");
 	strContent.remove('\r');
-	sm.client.sendData(strContent+"\n");
+	//为测试公开client
+	sm->client.sendData(strContent+"\n");
 }
 
 void QtApp::on_btnClear_clicked()
@@ -60,10 +62,10 @@ void QtApp::logout(QString str)
 void QtApp::on_btnConnect_clicked()
 {
 	//应该更新HOST地址和端口
-	sm.ConnectHost();
+	sm->ConnectHost();
 }
 
 void QtApp::on_btnDisconnect_clicked()
 {
-	sm.DisconnectHost();
+	sm->DisconnectHost();
 }

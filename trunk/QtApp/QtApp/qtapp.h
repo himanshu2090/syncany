@@ -17,7 +17,7 @@ public:
 
 private:
 	Ui::QtAppClass ui;
-	SessionManager sm;
+	SessionManager *sm;
 	Synconf *synconf;
 	SyncDB *syncdb;
 private slots:
