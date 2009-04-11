@@ -1,9 +1,11 @@
 #ifndef QTAPP_H
 #define QTAPP_H
 
-#include <QtGui/QDialog>
-#include "client.h"
+#include "common.h"
 #include "ui_qtapp.h"
+#include "sessionmanager.h"
+#include "synconf.h"
+#include "syncdb.h"
 
 class QtApp : public QDialog
 {
@@ -15,7 +17,9 @@ public:
 
 private:
 	Ui::QtAppClass ui;
-	Client client;
+	SessionManager sm;
+	Synconf *synconf;
+	SyncDB *syncdb;
 private slots:
 	void on_btnDisconnect_clicked();
 	void on_btnConnect_clicked();

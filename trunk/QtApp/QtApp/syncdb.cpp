@@ -1,7 +1,7 @@
 #include "syncdb.h"
 #include "synconf.h"
 
-SyncDB * SyncDB::m_instance=0;
+SyncDB * SyncDB::m_instance=null;
 QMutex g_locker_db;
 
 SyncDB::SyncDB(QObject *parent)
@@ -20,7 +20,7 @@ SyncDB::~SyncDB()
 SyncDB *SyncDB::instance()
 {
 	QMutexLocker locker(&g_locker_db);
-	if(!m_instance)
+	if(m_instance==null)
 	{
 		m_instance=new SyncDB(0);
 	}
@@ -93,6 +93,8 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊıÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀıÇ°ÒÑ¾­¼
 		strSql.arg(strTableName);
 		m_db.execDML(strSql.toStdString().c_str());
 	}
+	//ÔÚÕâÀïÌí¼ÓÆäËûĞèÒª³õÊ¼»¯´´½¨µÄ±í
+
 }
 
 
@@ -100,6 +102,7 @@ void SyncDB::put_cmd(QString strCmdID,QString strCmdStr)
 {
 	QString strSql="insert into [%1] (cmd_id,tag,cmd_str,create_time) values (%2,0,'%3',date('now'))";
 	strSql.arg(strCmdID,strCmdStr);
+	m_db.execDML(strSql.toStdString().c_str());
 }
 
 void SyncDB::tag_cmd(QString strCmdID,int tag)
