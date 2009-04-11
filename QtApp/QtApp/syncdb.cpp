@@ -7,7 +7,7 @@ QMutex g_locker_db;
 SyncDB::SyncDB(QObject *parent)
 	: QObject(parent)
 {
-	m_dbFile=Synconf::instance()->getstr("work_dir")+"syncdb";
+	m_dbFile=Synconf::instance()->getstr("work_dir")+"syncdb.db3";
 	m_db.open(m_dbFile.toStdString().c_str());
 	createTable();
 }
@@ -64,7 +64,7 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊıÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀıÇ°ÒÑ¾­¼
 	QString strTableName="sqin";
 	if(!m_db.tableExists(strTableName.toStdString().c_str()))
 	{
-		QString strSql="CREATE TABLE [%1] (\n"
+		QString strSql="CREATE TABLE ["+strTableName+"] (\n"
 			"[id] AUTOINC, \n"
 			"[cmd_id] INT NOT NULL, \n"
 			"[tag] INT NOT NULL DEFAULT 0, \n"
@@ -74,13 +74,12 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊıÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀıÇ°ÒÑ¾­¼
 			"[send_time] DATETIME, \n"
 			"[end_time] DATETIME, \n"
 			"CONSTRAINT [sqlite_autoindex_%1_1] PRIMARY KEY ([cmd_id]));\n";
-		strSql.arg(strTableName);
 		m_db.execDML(strSql.toStdString().c_str());
 	}
 	strTableName="sqout";
 	if(!m_db.tableExists(strTableName.toStdString().c_str()))
 	{
-		QString strSql="CREATE TABLE [%1] (\n"
+		QString strSql="CREATE TABLE ["+strTableName+"] (\n"
 			"[id] AUTOINC, \n"
 			"[cmd_id] INT NOT NULL, \n"
 			"[tag] INT NOT NULL DEFAULT 0, \n"
@@ -90,7 +89,6 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊıÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀıÇ°ÒÑ¾­¼
 			"[send_time] DATETIME, \n"
 			"[end_time] DATETIME, \n"
 			"CONSTRAINT [sqlite_autoindex_%1_1] PRIMARY KEY ([cmd_id]));\n";
-		strSql.arg(strTableName);
 		m_db.execDML(strSql.toStdString().c_str());
 	}
 	//ÔÚÕâÀïÌí¼ÓÆäËûĞèÒª³õÊ¼»¯´´½¨µÄ±í

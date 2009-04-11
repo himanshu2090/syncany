@@ -54,6 +54,7 @@ void Synconf::save_conf()
 	while(it!=m_config.end())
 	{
 		strConfig+=it.key()+"="+it.value()+"\n";
+		++it;
 	}
 }
 

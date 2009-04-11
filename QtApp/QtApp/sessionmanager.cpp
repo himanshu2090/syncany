@@ -9,6 +9,17 @@ SessionManager::SessionManager(QObject *parent)
 	try
 	{
 		timer = null;
+		syncdb=SyncDB::instance();
+		synconf=Synconf::instance();
+
+		svrhost=synconf->getstr("server_host","5.40.92.214");
+		svrport=synconf->getstr("server_port","18120");
+		synconf->setstr("server_host",svrhost);
+		synconf->setstr("server_port",svrport);
+
+		QString strTemp=synconf->getstr("heartbeat_interval","900");
+		heartbeat_interval=strTemp.toInt();
+
 		//日志网络连接的信息
 		connect(&client,SIGNAL(sigLogger(QString)),parent,SLOT(log(QString)));
 		connect(this,SIGNAL(sigLogger(QString)),parent,SLOT(log(QString)));
@@ -26,15 +37,7 @@ SessionManager::SessionManager(QObject *parent)
 		timer = new QTimer(this);
 		connect(timer, SIGNAL(timeout()), this, SLOT(heartbeat()));
 		timer->start(1000);
-		heartbeat_interval=synconf->getstr("heartbeat_interval","900").toInt();
 
-		syncdb=SyncDB::instance();
-		synconf=Synconf::instance();
-
-		svrhost=synconf->getstr("server_host","5.40.92.214");
-		svrport=synconf->getstr("server_port","18120");
-		synconf->setstr("server_host",svrhost);
-		synconf->setstr("server_port",svrport);
 		
 	}
 	catch(...)

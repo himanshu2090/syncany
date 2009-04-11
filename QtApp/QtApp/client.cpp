@@ -91,6 +91,13 @@ void Client::say_ping(QString strCmdID)
 
 void Client::say_hello(QString strCmdID,QMap<QString,QString> props)
 {
-	QString strCmdStr="hello "+strCmdID+" \n";
+	QString strCmdStr="hello "+strCmdID;
+	QMap<QString,QString>::const_iterator it=props.constBegin();
+	while(it!=props.end())
+	{
+		strCmdStr+=" "+it.key()+"="+it.value();
+		++it;
+	}
+	strCmdStr+="\n";
 	sendData(strCmdStr);
 }

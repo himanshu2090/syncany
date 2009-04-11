@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-//配置项，单体类
+//配置项，单体类 考虑使用QSetings来替代
 class Synconf : public QObject
 {
 	Q_OBJECT
