@@ -1,0 +1,111 @@
+# Makefile for building the ACE_MonitorControl library with Borland C++ Make
+
+NAME = ACE_MonitorControl
+
+NO_FULL_PATH=1
+
+OBJFILES = \
+	$(OBJDIR)\AutoUpdateStarter.$(OBJ_EXT) \
+	$(OBJDIR)\BytesReceivedMonitor.$(OBJ_EXT) \
+	$(OBJDIR)\BytesSentMonitor.$(OBJ_EXT) \
+	$(OBJDIR)\Constraint_Interpreter.$(OBJ_EXT) \
+	$(OBJDIR)\Constraint_Visitor.$(OBJ_EXT) \
+	$(OBJDIR)\CPULoadMonitor.$(OBJ_EXT) \
+	$(OBJDIR)\LinuxNetworkInterfaceMonitor.$(OBJ_EXT) \
+	$(OBJDIR)\MemoryUsageMonitor.$(OBJ_EXT) \
+	$(OBJDIR)\MonitorGroup.$(OBJ_EXT) \
+	$(OBJDIR)\MonitorQuery.$(OBJ_EXT) \
+	$(OBJDIR)\NumThreadsMonitor.$(OBJ_EXT) \
+	$(OBJDIR)\PacketsReceivedMonitor.$(OBJ_EXT) \
+	$(OBJDIR)\PacketsSentMonitor.$(OBJ_EXT) \
+	$(OBJDIR)\WindowsMonitor.$(OBJ_EXT) \
+	$(OBJDIR)\WindowsMultiInstanceMonitor.$(OBJ_EXT)
+
+LFLAGS = \
+        -L"." \
+        -j"."  \
+        -L"..\..\lib" \
+        -j"..\..\lib" 
+
+LIBFILES = \
+	ACE$(LIB_DECORATOR).lib \
+	ACE_ETCL$(LIB_DECORATOR).lib \
+	ACE_ETCL_Parser$(LIB_DECORATOR).lib \
+	$(DUMMY_VALUE_NOT_ENDING_IN_BACKSLASH)
+
+!ifdef STATIC
+LIB_FLAGS = \
+        -DACE_AS_STATIC_LIBS
+!else
+DLL_FLAGS = \
+        -DMONITORCONTROL_BUILD_DLL
+!endif
+
+CFLAGS = \
+	-I"..\.." \
+	$(LIB_FLAGS) \
+	$(DLL_FLAGS)
+
+CPPDIR = .
+CDIR   = .
+
+INCDIR_NAME = stage-31163\ACE_wrappers\ace\MonitorControl
+
+# build_files rules
+
+
+# test_files rules
+
+
+# pkgconfig_files rules
+
+
+# Override defaults in outputdir.bor
+INSTALL_THIS_TARGET = 1
+
+INCLUDES_INSTALL=1
+BINDIR = ..\..\lib
+
+!include <$(ACE_ROOT)\include\makeinclude\build_library.bor>
+
+includes_install: $(INCLUDES)
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y AutoUpdateStarter.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\AutoUpdateStarter.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y BytesReceivedMonitor.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\BytesReceivedMonitor.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y BytesSentMonitor.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\BytesSentMonitor.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y Constraint_Interpreter.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\Constraint_Interpreter.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y Constraint_Visitor.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\Constraint_Visitor.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y CPULoadMonitor.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\CPULoadMonitor.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y LinuxNetworkInterfaceMonitor.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\LinuxNetworkInterfaceMonitor.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y MemoryUsageMonitor.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\MemoryUsageMonitor.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y MonitorControl.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\MonitorControl.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y MonitorControl_export.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\MonitorControl_export.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y MonitorControl_utils.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\MonitorControl_utils.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y MonitorGroup.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\MonitorGroup.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y MonitorQuery.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\MonitorQuery.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y NumThreadsMonitor.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\NumThreadsMonitor.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y PacketsReceivedMonitor.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\PacketsReceivedMonitor.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y PacketsSentMonitor.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\PacketsSentMonitor.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y WindowsMonitor.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\WindowsMonitor.h 1> NUL
+	-@if not exist $(INSTALL_DIR)\include\$(INCDIR_NAME)\. mkdir $(INSTALL_DIR)\include\$(INCDIR_NAME)\.
+	-&copy /Y WindowsMultiInstanceMonitor.h $(INSTALL_DIR)\include\$(INCDIR_NAME)\WindowsMultiInstanceMonitor.h 1> NUL
+
+realclean:
+        @-rem
+
