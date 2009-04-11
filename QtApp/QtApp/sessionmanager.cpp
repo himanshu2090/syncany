@@ -14,7 +14,7 @@ SessionManager::SessionManager(QObject *parent)
 
 		svrhost=synconf->getstr("server_host","5.40.92.214");
 		svrport=synconf->getstr("server_port","18120");
-		synconf->setstr("server_host",svrhost);
+		synconf->setstr("server_host",svrhost,false);
 		synconf->setstr("server_port",svrport);
 
 		QString strTemp=synconf->getstr("heartbeat_interval","900");
@@ -59,10 +59,13 @@ QString SessionManager::generate_cmdid()
 {
 	QMutexLocker locker(&m_locker);
 	quint32 cmdid=synconf->getstr("current_cmdid","1").toInt();
+	QString strRet;
+	strRet.setNum(cmdid);
 	++cmdid;
-	QString strCmdID(cmdid);
+	QString strCmdID;
+	strCmdID.setNum(cmdid);
 	synconf->setstr("current_cmdid",strCmdID);
-	return strCmdID;
+	return strRet;
 }
 
 void SessionManager::ConnectHost()

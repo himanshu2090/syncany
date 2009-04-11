@@ -64,7 +64,9 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊıÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀıÇ°ÒÑ¾­¼
 	QString strTableName="sqin";
 	if(!m_db.tableExists(strTableName.toStdString().c_str()))
 	{
-		QString strSql="CREATE TABLE ["+strTableName+"] (\n"
+		QString strSql;
+		strSql+="CREATE TABLE [";
+		strSql+=strTableName+"] (\n"
 			"[id] AUTOINC, \n"
 			"[cmd_id] INT NOT NULL, \n"
 			"[tag] INT NOT NULL DEFAULT 0, \n"
@@ -79,7 +81,9 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊıÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀıÇ°ÒÑ¾­¼
 	strTableName="sqout";
 	if(!m_db.tableExists(strTableName.toStdString().c_str()))
 	{
-		QString strSql="CREATE TABLE ["+strTableName+"] (\n"
+		QString strSql;
+		strSql+="CREATE TABLE [";
+		strSql+=strTableName+"] (\n"
 			"[id] AUTOINC, \n"
 			"[cmd_id] INT NOT NULL, \n"
 			"[tag] INT NOT NULL DEFAULT 0, \n"

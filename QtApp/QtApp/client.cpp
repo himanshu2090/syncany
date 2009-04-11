@@ -85,19 +85,33 @@ void Client::sendData(QString str)
 
 void Client::say_ping(QString strCmdID)
 {
-	QString strCmdStr="ping "+strCmdID+"\n";
-	sendData(strCmdStr);
+	if(m_sock && m_sock->state()==QTcpSocket::ConnectedState)
+	{
+		QString strCmdStr("ping ");
+		strCmdStr+=strCmdID;
+		strCmdStr+="\n";
+		sendData(strCmdStr);
+	}
 }
 
 void Client::say_hello(QString strCmdID,QMap<QString,QString> props)
 {
-	QString strCmdStr="hello "+strCmdID;
-	QMap<QString,QString>::const_iterator it=props.constBegin();
-	while(it!=props.end())
+	if(m_sock && m_sock->state()==QTcpSocket::ConnectedState)
 	{
-		strCmdStr+=" "+it.key()+"="+it.value();
-		++it;
+		QString strCmdStr("hello ");
+		strCmdStr+=strCmdID;
+
+		QList<QString> keys=props.keys();
+
+		for(int i=0;i<keys.size();++i)
+		{
+			strCmdStr+=" ";
+			strCmdStr+=keys[i];
+			strCmdStr+="=";
+			strCmdStr+=props[keys[i]];
+		}
+
+		strCmdStr+="\n";
+		sendData(strCmdStr);
 	}
-	strCmdStr+="\n";
-	sendData(strCmdStr);
 }
