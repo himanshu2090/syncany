@@ -17,13 +17,13 @@ private:
 	QMap<QString,QString> m_config;
 
 	void load_conf();
-	void save_conf();
 	void init_default();//将有默认值但未设置的项设置为默认值
 public:
+	void save_conf();
 	static Synconf *instance();
 	static QString getOsVersionString();
 	QString getstr(QString strKey,QString strDefault=""); //获取配置项内容
-	void setstr(QString strKey,QString strValue,bool flush=true); //设置配置项
+	void setstr(QString strKey,QString strValue,bool flush=false); //设置配置项
 
 	QString getinfo(QString strKey);//一些只读信息的获取
 };
