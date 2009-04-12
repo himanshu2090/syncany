@@ -3,6 +3,8 @@
 extern ACE_Atomic_Op<ACE_Thread_Mutex,int> g_RemainLifeCount;
 PmString g_strNewLine("\r\n");
 
+
+
 	SyncProtocol::SyncProtocol(ACE_Reactor *r)
 :ACE_Event_Handler (r),
 	m_mask(0),
@@ -187,7 +189,7 @@ int SyncProtocol::handle_input(ACE_HANDLE fd)
 		{
 			//读取到了一个完整的命令行，开始进行命令行处理
 			//协议处理
-			do_command(strCmd);
+			do_command_ex(strCmd);
 		}
 
 		//存在可写的数据，将写事件注册到reactor
@@ -199,6 +201,84 @@ int SyncProtocol::handle_input(ACE_HANDLE fd)
 	}
 	return 0;
 };
+
+
+int SyncProtocol::do_ping(PmString& strCmdID,KEYVAL& KeyVal)
+{
+	PmString strOut = "state ";
+	strOut += strCmdID;
+	strOut += " 200 "
+	strOut += PmTime::getCurrentTime().getTimeStamp();
+	strOut += g_strNewLine;
+	m_pSocketIO->write_to_cache(strOut);
+	return 0;
+}
+
+
+int SyncProtocol::do_hello(PmString& strCmdID,KEYVAL& KeyVal)
+{
+	PmString strOut = "state ";
+	strOut += strCmdID;
+	strOut += " 200 ";
+	
+	
+	KEYVAL::iterator it;
+	for (it = KeyVal.begin() ; it != KeyVal.end() ; it++)
+	{
+		PmString strKey = it->first;
+		PmString strVal = it->second;
+		pm_info2("'%s'"="'%s'",strKey.c_str(),strVal.c_str());
+	}
+	m_pSocketIO->write_to_cache(strOut);
+	return 0;
+}
+
+
+
+
+
+int SyncProtocol::do_command_ex(PmString& strCmd)
+{
+	PmString strCmdName;
+	PmString strCmdID;
+	KEYVAL KeyVal;
+
+	PmString strOut;
+	if (parse_command_ex(strCmd,strCmdName,strCmdID,KeyVal) < 2)
+	{
+		strOut = "illegial command";
+		return 0;
+	}
+	
+
+
+	if (strCmd == "ping")
+	{
+		return do_ping(strCmdID,KeyVal);
+	}
+	elseif(strCmd == "hello")
+	{
+		return do_hello(strCmdID,KeyVal);
+	}
+	else
+	{
+		strOut = "state " + strCmdID;
+		strOut += " 401"
+	}
+
+	strOut += g_strNewLine;
+	m_pSocketIO->write_to_cache(strOut);
+	return 0;
+}
+		
+
+
+
+
+
+
+
+
 
 
 int SyncProtocol::do_command(PmString& strCmd)
@@ -314,48 +394,116 @@ int SyncProtocol::parse_command(PmString& strCmd,PmStringListPtr& PtrResultList)
 }
 
 
-typedef map<PmString,PmString> KEYVAL;
-int SyncProtocol::parse_command(PmString& strCmd,PmString& strCmdName,PmString& strCmdID,KEYVAL& KeyVal)
+
+int SyncProtocol::parse_command_ex(PmString& strCmd,PmString& strCmdName,PmString& strCmdID,KEYVAL& KeyVal)
 {
-	PmStringListPtr PtrSplitList = strCmd.split(" ");
-	int nCount = PtrSplitList->count();
-	if (nCount < 2)
-	{
-		return -1;//至少需要出现命令和命令号
-	}
-	strCmdName = PtrSplitList->getAt(0);
-	strCmdID = PtrSplitList->getAt(1);
 
-	if (!strCmdID.regEqual("^\\d+$"))
+	PmStringListPtr PtrResultList  = strCmd.regMatch("^(\\w+)\\s+(\\d+)\\s+(.*)\\s*$");
+	strCmdName = PtrResultList->getAt(0);
+	strCmdID = PtrResultList->getAt(1);
+
+	if (strCmdName == "" || strCmdID == "")
 	{
-		return -2;//命令号必须是数字
+		return -1;
 	}
 
-
-	if (2 == nCount)
-	{
-		return nCount;
-	}
-
-	int nPos = strCmd.find('"');
-	if (nPos < 0)
-	{
-		//命令行内不包含"
-		strCmdName = PtrSplitList->getAt(0);
-		strCmdID = PtrSplitList->getAt(1);
-
-	}
-
-
-
-
-
-	int nLen = strCmd.length();
-	int nPos = 0;
-	nPos = strCmd.find(' ');
-	if (nPos <= 0)
+	PmString strRemain = PtrResultList->getAt(2);
+	if (strRemain == "")
 	{
 		return 0;
 	}
 
+	int nValidCount = 2;
+
+	PmStringListPtr PtrSplitList = strCmd.split(' ');
+	int nCount = PtrSplitList->count();
+	int nPos = strCmd.find('"');
+	PmString strTemp;
+	PmStringListPtr PtrSplitListTemp;
+	if (nPos < 0)
+	{
+		//命令行内不包含"
+		for (int i = 0 ; i < nCount ; ++i)
+		{
+			strTemp = PtrSplitList->getAt(i);
+			PtrSplitListTemp = strTemp.split('=');
+			if (2 != PtrSplitListTemp->count())
+			{
+				//没有等号或者存在多个等号
+				return nValidCount;
+			}
+			KeyVal[PtrSplitListTemp->getAt(0)] = PtrSplitListTemp->getAt(0);
+			++nValidCount;
+		}
+	}
+	else
+	{
+		PmString strMerge;
+		//命令行内包含"
+		for (int i = 0 ; i < nCount ; ++i)
+		{
+			strTemp = PtrSplitList->getAt(i);
+			if (strTemp.find('"') < 0)
+			{
+				//本字符串内不存在"
+				PtrSplitListTemp = strTemp.split('=');
+				if (2 != PtrSplitListTemp->count())
+				{
+					//没有等号或者存在多个等号
+					return nValidCount;
+				}
+				KeyVal[PtrSplitListTemp->getAt(0)] = PtrSplitListTemp->getAt(0);
+				++nValidCount;
+			}
+			else
+			{
+				//本字符串内存在"
+				if (strMerge != "")
+				{
+					strMerge += strTemp;
+					int nLength = strMerge.length();
+					int nQuotation = 0;
+					for (int pos = 0 ; pos < nLength ; ++pos)
+					{
+						if ('"' == strMerge.getAt(pos))
+						{
+							++nQuotation;
+						}
+					}
+					if (3 == nQuotation)
+					{
+						continue;
+					}
+
+					PtrSplitListTemp = strMerge.split('=');
+					PmString strKey = PtrSplitListTemp->getAt(0);
+					PmString strVal = PtrSplitListTemp->getAt(1);
+					if (strKey.getAt(0) == '"')
+					{
+						strKey = strKey.substr(1,strKey.length()-2);
+					}
+
+					if (strKey.getAt(0) == '"')
+					{
+						strVal = strVal.substr(1,strVal.length()-2);
+					}
+					KeyVal[strKey] = strVal;
+					++nValidCount;	
+					strMerge = "";
+					continue;
+				}
+				else
+				{
+					strMerge = strTemp;
+				}
+				
+			}
+
+		}
+	}
+	
+	return nValidCount;
 }
+
+
+
