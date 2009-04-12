@@ -477,6 +477,7 @@ int SyncProtocol::parse_command_ex(PmString& strCmd,PmString& strCmdName,PmStrin
 					}
 					if (3 == nQuotation)
 					{
+						strMerge += " ";
 						continue;
 					}
 
@@ -499,7 +500,7 @@ int SyncProtocol::parse_command_ex(PmString& strCmd,PmString& strCmdName,PmStrin
 				}
 				else
 				{
-					strMerge = strTemp;
+					strMerge = strTemp + " ";
 				}
 				
 			}
