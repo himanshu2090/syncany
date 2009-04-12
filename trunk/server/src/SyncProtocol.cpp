@@ -3,19 +3,19 @@
 extern ACE_Atomic_Op<ACE_Thread_Mutex,int> g_RemainLifeCount;
 PmString g_strNewLine("\r\n");
 
-SyncProtocol::SyncProtocol(ACE_Reactor *r)
-	:ACE_Event_Handler (r),
-	 m_mask(0),
-	 m_input_buffer(NULL),
-	 m_output_buffer(NULL),
-	 m_bQuit(PM_FALSE),
-	 m_bAuth(PM_FALSE),
-	 m_uCmdID(0),
-	 m_ptimeout(NULL),
-	 m_pSocketIO(NULL)
+	SyncProtocol::SyncProtocol(ACE_Reactor *r)
+:ACE_Event_Handler (r),
+	m_mask(0),
+	m_input_buffer(NULL),
+	m_output_buffer(NULL),
+	m_bQuit(PM_FALSE),
+	m_bAuth(PM_FALSE),
+	m_uCmdID(0),
+	m_ptimeout(NULL),
+	m_pSocketIO(NULL)
 {
 }
- 
+
 SyncProtocol::~SyncProtocol()
 {
 }
@@ -27,7 +27,7 @@ ACE_HANDLE SyncProtocol::get_handle() const
 };
 
 // Get a reference to the contained <ACE_SOCK_Stream>
- ACE_SOCK_Stream& SyncProtocol::peer() 
+ACE_SOCK_Stream& SyncProtocol::peer() 
 { 
 	return m_sock; 
 }
@@ -39,9 +39,9 @@ void SyncProtocol::SetTime(time_t* pTime)
 
 int SyncProtocol::open() 
 { 
-    ACE_NEW_RETURN( m_input_buffer, ACE_Message_Block (2*1024, ACE_Message_Block::MB_HANGUP), -1 );
-    ACE_NEW_RETURN( m_output_buffer, ACE_Message_Block (8*1024, ACE_Message_Block::MB_HANGUP), -1 );
-    ACE_NEW_RETURN( m_pSocketIO, SocketIO(&m_sock,m_input_buffer,m_output_buffer), -1 );
+	ACE_NEW_RETURN( m_input_buffer, ACE_Message_Block (2*1024, ACE_Message_Block::MB_HANGUP), -1 );
+	ACE_NEW_RETURN( m_output_buffer, ACE_Message_Block (8*1024, ACE_Message_Block::MB_HANGUP), -1 );
+	ACE_NEW_RETURN( m_pSocketIO, SocketIO(&m_sock,m_input_buffer,m_output_buffer), -1 );
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//设置SOCKET特性
@@ -59,9 +59,9 @@ int SyncProtocol::open()
 	Linger.l_linger = 30;
 	m_sock.set_option(SOL_SOCKET,SO_LINGER,(void*)(&Linger),sizeof(Linger));//设置延时关闭时间为30秒
 	m_sock.set_option(SOL_SOCKET,SO_REUSEADDR,(void*)(&opt),sizeof(int));//重用本地断口
-	
-    //注册socket的读事件
-    ACE_SET_BITS(m_mask, ACE_Event_Handler::READ_MASK);
+
+	//注册socket的读事件
+	ACE_SET_BITS(m_mask, ACE_Event_Handler::READ_MASK);
 	errno = 0;
 	int iret = reactor()->register_handler( this, m_mask );
 	if (iret == -1)
@@ -125,7 +125,7 @@ int SyncProtocol::handle_output(ACE_HANDLE fd)
 {
 	int iret = m_pSocketIO->write_all_out();
 	int nRemainLen = m_pSocketIO->length();
-	
+
 	if (nRemainLen > 0)
 	{
 		//数据还未写完，等待再次被回调
@@ -136,10 +136,10 @@ int SyncProtocol::handle_output(ACE_HANDLE fd)
 		reactor()->remove_handler( this, ACE_Event_Handler::WRITE_MASK );
 		*m_ptimeout = time(0);//服务端处理完成，开始计算客户端的超时
 	}
-    return 0;
+	return 0;
 }
 
-	//有可读数据时，回调此函数
+//有可读数据时，回调此函数
 int SyncProtocol::handle_input(ACE_HANDLE fd)
 {
 	errno = 0;
@@ -182,14 +182,14 @@ int SyncProtocol::handle_input(ACE_HANDLE fd)
 	{
 		PM_BOOL bReg = PM_FALSE;
 		PmString strCmd;
-		
+
 		while(m_pSocketIO->get_line(strCmd) > 0)
 		{
 			//读取到了一个完整的命令行，开始进行命令行处理
 			//协议处理
 			do_command(strCmd);
 		}
-		
+
 		//存在可写的数据，将写事件注册到reactor
 		if (m_pSocketIO->length() > 0)
 		{
@@ -207,7 +207,9 @@ int SyncProtocol::do_command(PmString& strCmd)
 	pm_info1("接收到数据:%s",strCmd.c_str());
 	//strCmd.toUpper();//将接受到的命令转换为大写
 	PmStringListPtr PtrResultList;
-	if(parse_command(strCmd,PtrResultList) < 2)
+	unsigned int nCount = parse_command(strCmd,PtrResultList);
+
+	if(nCount < 2)
 	{
 		pm_error1("接收到非法的命令:%s",strCmd.c_str());
 		strOut.format("发送的命令(%s)非法",strCmd.c_str());
@@ -218,25 +220,58 @@ int SyncProtocol::do_command(PmString& strCmd)
 		PmString str1(PtrResultList->getAt(0));
 		PmString str2(PtrResultList->getAt(1));
 
+		strOut += str2;
 		if (0 == str1.compare("ping"))
 		{
-			strOut += str2;
-			strOut += " 200 ";
+			if (nCount == 2)
+			{
+				strOut += " 200 ";
+			}
+			else
+			{
+				strOut += " 402 ";
+				pm_error2("命令的参数个数不正确:(%s)(%d)",strCmd.c_str(),nCount);
+			}
 			strOut += PmTime::getCurrentTime().getTimeStamp();
 		}
 		else if (0 == str1.compare("hello"))
 		{
-			strOut += str2;
-			strOut += " 200 ";
-			if(!m_bAuth)
+			int flag = 0;
+			if (nCount != 3)
 			{
-				//用户还未曾鉴权
-				strOut += g_strNewLine;
-				++m_uCmdID;
-				strOut.format("%swhoareyou %d",strOut.c_str(),m_uCmdID);
-				UnFinishCmdPtr ptr = new UnFinishCmd("hello");
-				m_UnFinishRecord[m_uCmdID] = ptr; 
-				pm_info3("未完成队列中增加了一条记录,命令id(%d),命令生成时间(%s),未完成个数(%d)",ptr->nCmdID,ptr->CmdStartTime.getTimeStamp().c_str(),m_UnFinishRecord.size());
+				flag = 1;
+			}
+
+			if (0 == flag)
+			{
+				PmString strRemain = PtrResultList->getAt(2);
+				PmStringListPtr PtrHelloParams = strRemain.regMatch("^(\\S*)\\s+(\\d*.?\\d*)\\s*$");
+				m_strDevicePlatform = PtrHelloParams->getAt(0);
+				m_strDeviceVersion = PtrHelloParams->getAt(1);
+				if (m_strDevicePlatform == "" || m_strDeviceVersion == "")
+				{
+					flag = 1;
+					pm_error2("m_strDevicePlatform=(%s),m_strDeviceVersion=(%s)",m_strDevicePlatform.c_str(),m_strDeviceVersion.c_str());
+				}
+			}
+			if (0 == flag)
+			{
+				strOut += " 200 ";
+				if(!m_bAuth)
+				{
+					//用户还未曾鉴权
+					strOut += g_strNewLine;
+					++m_uCmdID;
+					strOut.format("%swhoareyou %d",strOut.c_str(),m_uCmdID);
+					UnFinishCmdPtr ptr = new UnFinishCmd("hello");
+					m_UnFinishRecord[m_uCmdID] = ptr; 
+					pm_info3("未完成队列中增加了一条记录,命令id(%d),命令生成时间(%s),未完成个数(%d)",ptr->nCmdID,ptr->CmdStartTime.getTimeStamp().c_str(),m_UnFinishRecord.size());
+				}
+			}
+			else
+			{
+				strOut += " 402 ";
+				pm_error1("命令的参数个数不正确:(%s)",strCmd.c_str());
 			}
 		}
 		else if(0 == str1.compare("session"))
@@ -254,17 +289,73 @@ int SyncProtocol::do_command(PmString& strCmd)
 			strOut += str2;
 			strOut += " 401";
 		}
-		
+
 	}
 	strOut += g_strNewLine;
 	m_pSocketIO->write_to_cache(strOut);
 }
-	
+
 int SyncProtocol::parse_command(PmString& strCmd,PmStringListPtr& PtrResultList)
 {
 	PtrResultList = strCmd.regMatch("^(\\w+)\\s+(\\d+)\\s+(.*)\\s*$");
-	return PtrResultList->count();
+	if (PtrResultList->getAt(0) == "")
+	{
+		return 0;
+	}
+	if (PtrResultList->getAt(1) == "")
+	{
+		return 1;
+	}
+	if (PtrResultList->getAt(2) == "")
+	{
+		return 2;
+	}
+	return 3;
 }
 
 
+typedef map<PmString,PmString> KEYVAL;
+int SyncProtocol::parse_command(PmString& strCmd,PmString& strCmdName,PmString& strCmdID,KEYVAL& KeyVal)
+{
+	PmStringListPtr PtrSplitList = strCmd.split(" ");
+	int nCount = PtrSplitList->count();
+	if (nCount < 2)
+	{
+		return -1;//至少需要出现命令和命令号
+	}
+	strCmdName = PtrSplitList->getAt(0);
+	strCmdID = PtrSplitList->getAt(1);
 
+	if (!strCmdID.regEqual("^\\d+$"))
+	{
+		return -2;//命令号必须是数字
+	}
+
+
+	if (2 == nCount)
+	{
+		return nCount;
+	}
+
+	int nPos = strCmd.find('"');
+	if (nPos < 0)
+	{
+		//命令行内不包含"
+		strCmdName = PtrSplitList->getAt(0);
+		strCmdID = PtrSplitList->getAt(1);
+
+	}
+
+
+
+
+
+	int nLen = strCmd.length();
+	int nPos = 0;
+	nPos = strCmd.find(' ');
+	if (nPos <= 0)
+	{
+		return 0;
+	}
+
+}

@@ -92,6 +92,9 @@ private :
 	PM_BOOL m_bAuth;
 	unsigned int m_uCmdID;
 	UnFinishRecord m_UnFinishRecord;//记录未完成的命令
+
+	PmString m_strDevicePlatform;
+	PmString m_strDeviceVersion;
 public:
 	 SyncProtocol(ACE_Reactor *r = ACE_Reactor::instance ());
 	 
