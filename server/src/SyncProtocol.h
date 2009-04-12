@@ -113,11 +113,11 @@ public:
 	 virtual int do_command(PmString& strCmd);
 	 int parse_command(PmString& strCmd,PmStringListPtr& PtrResultList);
 
-
 	 int do_command_ex(PmString& strCmd);
 	 int do_ping(PmString& strCmdID,KEYVAL& KeyVal);
 	 int do_hello(PmString& strCmdID,KEYVAL& KeyVal);
 	 int parse_command_ex(PmString& strCmd,PmString& strCmdName,PmString& strCmdID,KEYVAL& KeyVal);
+};
 
 
 #endif
