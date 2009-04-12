@@ -14,10 +14,11 @@ SessionManager::SessionManager(QObject *parent)
 
 		svrhost=synconf->getstr("server_host","5.40.92.214");
 		svrport=synconf->getstr("server_port","18120");
-		synconf->setstr("server_host",svrhost,false);
+		synconf->setstr("server_host",svrhost);
 		synconf->setstr("server_port",svrport);
 
-		QString strTemp=synconf->getstr("heartbeat_interval","900");
+		QString strTemp=synconf->getstr("heartbeat_interval","10");
+		synconf->setstr("heartbeat_interval",strTemp,true);
 		heartbeat_interval=strTemp.toInt();
 
 		//日志网络连接的信息
@@ -32,6 +33,8 @@ SessionManager::SessionManager(QObject *parent)
 		connect(&client,SIGNAL(disconnected(Client *)),this,SLOT(client_disconnected(Client *)));
 
 		//将client传入的内容根据协议解析出命令或响应后再由SM进行调度
+		connect(&client,SIGNAL(sigRecv(Client *,QString ,QString ,QString )),this,SLOT(recv_data(Client *,QString ,QString ,QString)));
+
 		//传出的命令或响应由SM调度交给各个client发送
 
 		timer = new QTimer(this);
@@ -70,6 +73,7 @@ QString SessionManager::generate_cmdid()
 
 void SessionManager::ConnectHost()
 {
+	bAutoConnectHost=true;
 	if(client.getSocket()->state()!=QTcpSocket::ConnectedState)
 	{
 		svrhost=synconf->getstr("server_host","");
@@ -114,3 +118,7 @@ void SessionManager::client_disconnected(Client *cl)
 {
 }
 
+void SessionManager::recv_data(Client *cl,QString strCmdID,QString strCmdStr,QMap<QString,QString> props ,QByteArray buffer)
+{
+	
+}

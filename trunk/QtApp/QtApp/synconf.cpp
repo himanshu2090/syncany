@@ -19,6 +19,8 @@ Synconf * Synconf::instance()
 	if(m_instance==null)
 	{
 		m_instance = new Synconf(0);
+		locker.unlock();
+		m_instance->load_conf();
 	}
 	return m_instance;
 }
@@ -27,6 +29,7 @@ Synconf * Synconf::instance()
 //应该监视配置文件是否被修改，在被修改的时候重新载入
 void Synconf::load_conf()
 {
+	QMutexLocker locker(&g_locker_synconf);
 	QString strConfigFile=QDir::currentPath()+"/synconf.ini";
 	if(QFile::exists(strConfigFile))
 	{
@@ -49,6 +52,7 @@ void Synconf::load_conf()
 
 void Synconf::save_conf()
 {
+	QMutexLocker locker(&g_locker_synconf);
 	QString strConfig;
 	QMap<QString,QString>::const_iterator it=m_config.constBegin();
 	while(it!=m_config.end())
@@ -66,7 +70,7 @@ void Synconf::save_conf()
 void Synconf::init_default()//将有默认值但未设置的项设置为默认值
 {
 	if(m_config.find("work_dir")==m_config.end())
-		m_config["work_dir"]=QDir::currentPath();
+		m_config["work_dir"]=QDir::currentPath()+"/";
 	
 }
 
