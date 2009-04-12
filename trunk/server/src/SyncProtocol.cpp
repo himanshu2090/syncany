@@ -207,7 +207,7 @@ int SyncProtocol::do_ping(PmString& strCmdID,KEYVAL& KeyVal)
 {
 	PmString strOut = "state ";
 	strOut += strCmdID;
-	strOut += " 200 "
+	strOut += " 200 ";
 	strOut += PmTime::getCurrentTime().getTimeStamp();
 	strOut += g_strNewLine;
 	m_pSocketIO->write_to_cache(strOut);
@@ -227,8 +227,9 @@ int SyncProtocol::do_hello(PmString& strCmdID,KEYVAL& KeyVal)
 	{
 		PmString strKey = it->first;
 		PmString strVal = it->second;
-		pm_info2("'%s'"="'%s'",strKey.c_str(),strVal.c_str());
+		pm_info2("'%s'='%s'",strKey.c_str(),strVal.c_str());
 	}
+	strOut += g_strNewLine;
 	m_pSocketIO->write_to_cache(strOut);
 	return 0;
 }
@@ -239,6 +240,7 @@ int SyncProtocol::do_hello(PmString& strCmdID,KEYVAL& KeyVal)
 
 int SyncProtocol::do_command_ex(PmString& strCmd)
 {
+	pm_info1("receive cmd(%s)",strCmd.c_str());
 	PmString strCmdName;
 	PmString strCmdID;
 	KEYVAL KeyVal;
@@ -247,23 +249,19 @@ int SyncProtocol::do_command_ex(PmString& strCmd)
 	if (parse_command_ex(strCmd,strCmdName,strCmdID,KeyVal) < 2)
 	{
 		strOut = "illegial command";
-		return 0;
 	}
-	
-
-
-	if (strCmd == "ping")
+	else if (strCmdName == "ping")
 	{
 		return do_ping(strCmdID,KeyVal);
 	}
-	elseif(strCmd == "hello")
+	else if(strCmdName == "hello")
 	{
 		return do_hello(strCmdID,KeyVal);
 	}
 	else
 	{
 		strOut = "state " + strCmdID;
-		strOut += " 401"
+		strOut += " 401";
 	}
 
 	strOut += g_strNewLine;
@@ -399,25 +397,31 @@ int SyncProtocol::parse_command_ex(PmString& strCmd,PmString& strCmdName,PmStrin
 {
 
 	PmStringListPtr PtrResultList  = strCmd.regMatch("^(\\w+)\\s+(\\d+)\\s+(.*)\\s*$");
+	pm_info1("parse count(%d)",PtrResultList->count());
+	if (PtrResultList->count() < 2)
+	{
+		return -1;
+	}
 	strCmdName = PtrResultList->getAt(0);
 	strCmdID = PtrResultList->getAt(1);
 
 	if (strCmdName == "" || strCmdID == "")
 	{
+        pm_info2("CmdName=%s  CmdID=%s",strCmdName.c_str(),strCmdID.c_str());
 		return -1;
 	}
 
 	PmString strRemain = PtrResultList->getAt(2);
 	if (strRemain == "")
 	{
-		return 0;
+		return 2;
 	}
 
 	int nValidCount = 2;
 
-	PmStringListPtr PtrSplitList = strCmd.split(' ');
+	PmStringListPtr PtrSplitList = strRemain.split(" ");
 	int nCount = PtrSplitList->count();
-	int nPos = strCmd.find('"');
+	int nPos = strRemain.find("\"");
 	PmString strTemp;
 	PmStringListPtr PtrSplitListTemp;
 	if (nPos < 0)
@@ -426,13 +430,14 @@ int SyncProtocol::parse_command_ex(PmString& strCmd,PmString& strCmdName,PmStrin
 		for (int i = 0 ; i < nCount ; ++i)
 		{
 			strTemp = PtrSplitList->getAt(i);
-			PtrSplitListTemp = strTemp.split('=');
+			PtrSplitListTemp = strTemp.split("=");
 			if (2 != PtrSplitListTemp->count())
 			{
 				//没有等号或者存在多个等号
+				pm_info1("count = %d",PtrSplitListTemp->count());
 				return nValidCount;
 			}
-			KeyVal[PtrSplitListTemp->getAt(0)] = PtrSplitListTemp->getAt(0);
+			KeyVal[PtrSplitListTemp->getAt(0)] = PtrSplitListTemp->getAt(1);
 			++nValidCount;
 		}
 	}
@@ -443,16 +448,16 @@ int SyncProtocol::parse_command_ex(PmString& strCmd,PmString& strCmdName,PmStrin
 		for (int i = 0 ; i < nCount ; ++i)
 		{
 			strTemp = PtrSplitList->getAt(i);
-			if (strTemp.find('"') < 0)
+			if (strTemp.find("\"") < 0)
 			{
 				//本字符串内不存在"
-				PtrSplitListTemp = strTemp.split('=');
+				PtrSplitListTemp = strTemp.split("=");
 				if (2 != PtrSplitListTemp->count())
 				{
 					//没有等号或者存在多个等号
 					return nValidCount;
 				}
-				KeyVal[PtrSplitListTemp->getAt(0)] = PtrSplitListTemp->getAt(0);
+				KeyVal[PtrSplitListTemp->getAt(0)] = PtrSplitListTemp->getAt(1);
 				++nValidCount;
 			}
 			else
@@ -475,7 +480,7 @@ int SyncProtocol::parse_command_ex(PmString& strCmd,PmString& strCmdName,PmStrin
 						continue;
 					}
 
-					PtrSplitListTemp = strMerge.split('=');
+					PtrSplitListTemp = strMerge.split("=");
 					PmString strKey = PtrSplitListTemp->getAt(0);
 					PmString strVal = PtrSplitListTemp->getAt(1);
 					if (strKey.getAt(0) == '"')
