@@ -105,6 +105,7 @@ void SessionManager::heartbeat()
 		client.say_ping(generate_cmdid());
 	}
 	//TODO:在这里处理未发送的命令
+
 }
 
 void SessionManager::client_connected(Client *cl)
@@ -126,17 +127,29 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 {
 	QString str=QString::fromLocal8Bit("收到命令：%1,%2,%3,%4,%5");
 	QByteArray st=str.arg(nCmdID).arg(strCmdStr).arg(strCmdLine).arg(props.size()).arg(buffer.size()).toLocal8Bit();
+	qDebug(st.data());
+	emit sigLogger(st);
+
+	//先入队列，后续处理时对于复杂的任务，考虑开线程去处理
 
 	switch(nCmdID)
 	{
 	case CMD_BYE:
-		cl->say_bye(props);
+		cl->ack_bye(props);
 	case CMD_STATE:
 		//收到命令相应的处理
 		break;
 	case CMD_ALERT:
 		break;
 	case CMD_WHOAREYOU:
+		{
+			QMap<QString,QString> props);
+			props["sessionid"]=synconf->getstr("session_id");
+			props["user"]=synconf->getstr("user_id");
+			props["pwd"]=synconf->getstr("user_password");
+			props["devuid"]=synconf->getstr("device_id");
+			cl->ack_state(props);
+		}
 		break;
 	case CMD_UNKNOWN:
 	default:
@@ -144,6 +157,4 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 		break;
 	}
 
-	qDebug(st.data());
-	emit sigLogger(str);
 }
