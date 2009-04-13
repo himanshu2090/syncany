@@ -24,7 +24,8 @@ public slots:
 	void put_cmd(QString strCmdID,QString strCmdStr);
 	void tag_cmd(QString strCmdID,int tag);
 	void tag_cmd(QString strCmdID,int tag,QString strCmdRet);
-	
+	void execSql(QString strSql);
+
 private:
 	int m_type;
 	QString m_strTable;

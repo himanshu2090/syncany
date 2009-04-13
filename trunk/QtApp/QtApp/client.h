@@ -33,6 +33,9 @@ public:
 	void sendData(QString);
 	void say_ping(QString strCmdID);
 	void say_hello(QString strCmdID,QMap<QString,QString> props);
+	void ack_bye(QMap<QString,QString> props);
+	void ack_state(QMap<QString,QString> props,QByteArray data);//可传输数据的版本
+	void ack_state(QMap<QString,QString> props);
 
 private:
 	QTcpSocket *m_sock;

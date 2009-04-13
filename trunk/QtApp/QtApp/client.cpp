@@ -29,11 +29,13 @@ void Client::connectSignal()
 void Client::ConnectHost(QString host,quint32 port)
 {
 	DisconnectHost();
+	QMutexLocker locker(&m_locker_out);//必须放这里，否则锁重入
 	m_sock->connectToHost(host,port);
 }
 
 void Client::DisconnectHost()
 {
+	QMutexLocker locker(&m_locker_out);
 	if(m_sock->state()!=QTcpSocket::UnconnectedState)
 		m_sock->disconnectFromHost();
 } 
@@ -68,6 +70,7 @@ void Client::stateChanged ( QTcpSocket::SocketState socketState )
 
 void Client::readData()
 {
+	QMutexLocker locker(&m_locker_out);
 	buffer+=m_sock->readAll();
 	if(bWaitingCommand)
 	{
@@ -209,3 +212,28 @@ void Client::say_hello(QString strCmdID,QMap<QString,QString> props)
 		sendData(strCmdStr);
 	}
 }
+
+void Client::ack_bye(QMap<QString,QString> props)
+{
+	if(props.find("1")!=props.end())
+	{
+		QString strCmdID=props["1"];
+		if(strCmdID!=0 && strCmdID.toInt()!=0)
+		{
+			QString strCmdStr="state "+strCmdID+" 200\n";
+			sendData(strCmdStr);
+			m_sock->waitForBytesWritten(100);
+		}
+	}
+	m_sock->DisconnectHost();
+}
+
+void Client::ack_state(QMap<QString,QString> props)
+{
+}
+
+
+void Client::ack_state(QMap<QString,QString> props,QByteArray data)
+{
+}
+

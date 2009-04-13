@@ -99,9 +99,15 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊıÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀıÇ°ÒÑ¾­¼
 
 }
 
+void SyncDB::execSql(QString strSql)
+{
+	QMutexLocker locker(&g_locker_db);
+	m_db.execDML(strSql.toStdString().c_str());
+}
 
 void SyncDB::put_cmd(QString strCmdID,QString strCmdStr)
 {
+	QMutexLocker locker(&g_locker_db);
 	QString strSql="insert into [%1] (cmd_id,tag,cmd_str,create_time) values (%2,0,'%3',date('now'))";
 	strSql.arg(strCmdID,strCmdStr);
 	m_db.execDML(strSql.toStdString().c_str());
@@ -109,9 +115,11 @@ void SyncDB::put_cmd(QString strCmdID,QString strCmdStr)
 
 void SyncDB::tag_cmd(QString strCmdID,int tag)
 {
+	QMutexLocker locker(&g_locker_db);
 }
 
 void SyncDB::tag_cmd(QString strCmdID,int tag,QString strCmdRet)
 {
+	QMutexLocker locker(&g_locker_db);
 }
 
