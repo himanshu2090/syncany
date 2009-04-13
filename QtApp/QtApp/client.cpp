@@ -117,12 +117,21 @@ void Client::readData()
 			}
 			//提取命令携带的属性
 			props.clear();
-			for(int i=2;i<strlist.size();++i)
+			int id=0;
+			for(int i=0;i<strlist.size();++i)
 			{
 				QStringList listKeyValue=strlist[i].split('=');
-				if(listKeyValue.size()!=2)
+				switch(listKeyValue.size()) //对于非=号的单独属性序列，使用数字序号来代表KEY
+				{
+				case 1:
+					props[QString(id++)]=listKeyValue[0];
+					break;
+				case 2:
+					props[listKeyValue[0]]=listKeyValue[1];
+					break;
+				default:
 					continue;
-				props[listKeyValue[0]]=listKeyValue[1];
+				}
 			}
 			//判断有没有size属性，有则进入等待数据模式，否则将命令发送信号，交给相关的槽去进行处理
 			datalen=0;
@@ -133,7 +142,7 @@ void Client::readData()
 
 				if(!ok)
 				{
-					emit sigRecv(this,strCmdID,strCmdStr,props,QByteArray());
+					emit sigRecv(this,nCmdID,strCmdStr,strCmdLine,props,QByteArray());
 					continue;
 				}
 				bWaitingCommand=false;//进入等待数据模式
@@ -141,7 +150,7 @@ void Client::readData()
 				break;
 			}
 			//发送命令信号
-			emit sigRecv(this,strCmdID,strCmdStr,props,QByteArray());
+			emit sigRecv(this,nCmdID,strCmdStr,strCmdLine,props,QByteArray());
 		}
 	}
 	
@@ -149,7 +158,7 @@ void Client::readData()
 	if(buffer.size()>=datalen)
 	{
 		QByteArray data=buffer.left(datalen);
-		emit sigRecv(this,strCmdID,strCmdStr,props,data);
+		emit sigRecv(this,nCmdID,strCmdStr,strCmdLine,props,data);
 		bWaitingCommand=true;
 	}
 	//else 继续等待下一批数据到来

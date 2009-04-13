@@ -104,6 +104,7 @@ void SessionManager::heartbeat()
 		heartbeat_count=0;
 		client.say_ping(generate_cmdid());
 	}
+	//TODO:在这里处理未发送的命令
 }
 
 void SessionManager::client_connected(Client *cl)
@@ -113,6 +114,7 @@ void SessionManager::client_connected(Client *cl)
 	props["syncany_client"]=synconf->getinfo("client_version");
 	props["protocol"]=synconf->getinfo("protocol_version");
 	props["platform"]=synconf->getinfo("os_version");
+
 	cl->say_hello(generate_cmdid(),props);
 }
 
@@ -120,11 +122,28 @@ void SessionManager::client_disconnected(Client *cl)
 {
 }
 
-void SessionManager::recv_data(Client *cl,QString strCmdID,QString strCmdStr,QMap<QString,QString> props ,QByteArray buffer)
+void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QString strCmdLine,QMap<QString,QString> props ,QByteArray buffer)
 {
-	QString str=QString::fromLocal8Bit("收到命令：%1,%2,%3,%4");
-	str.arg(strCmdID).arg(strCmdStr).arg(props.size()).arg(buffer.size());
+	QString str=QString::fromLocal8Bit("收到命令：%1,%2,%3,%4,%5");
+	QByteArray st=str.arg(nCmdID).arg(strCmdStr).arg(strCmdLine).arg(props.size()).arg(buffer.size()).toLocal8Bit();
 
-	qDebug(str.toStdString().c_str());
+	switch(nCmdID)
+	{
+	case CMD_BYE:
+		cl->say_bye(props);
+	case CMD_STATE:
+		//收到命令相应的处理
+		break;
+	case CMD_ALERT:
+		break;
+	case CMD_WHOAREYOU:
+		break;
+	case CMD_UNKNOWN:
+	default:
+		emit sigLogger("错误！未知命令："+str);
+		break;
+	}
+
+	qDebug(st.data());
 	emit sigLogger(str);
 }
