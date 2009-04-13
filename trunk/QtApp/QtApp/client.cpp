@@ -77,7 +77,15 @@ void Client::readData()
 				return ;
 			int lb=buffer.indexOf('\n');
 			if(lb==-1)	return ; //命令必然是以\n结束
-			strCmdLine==buffer.left(lb);
+
+			strCmdLine = buffer.left(lb);
+			//QByteArray bt = buffer.left(lb);
+			////strCmdLine.fromAscii(bt.constData());
+			//strCmdLine=bt;
+			//strCmdLine=bt.data();
+			//char * p=bt.data();
+			//strCmdLine=p;
+
 			buffer.remove(0,lb+1);
 			QStringList strlist=strCmdLine.split(' ');
 			if(strlist.size()<2)
@@ -87,16 +95,20 @@ void Client::readData()
 				continue;
 			}
 			bool ok;
+
 			strCmdID=strlist[1];
 			int nCmdID=strCmdID.toInt(&ok);
+
 			if(!ok)
 			{	
 				//错误的命令，丢弃
 				emit sigLogger(QString("Error Command Recv( CmdID is not number!):%1!").arg(strCmdLine));
 				continue;
 			}
+
 			strCmdStr=strlist[0];
 			nCmdType=get_cmdtype(strCmdStr.toStdString().c_str());
+
 			if(nCmdType==CMD_UNKNOWN)
 			{
 				//错误的命令，丢弃
@@ -104,6 +116,7 @@ void Client::readData()
 				continue;
 			}
 			//提取命令携带的属性
+			props.clear();
 			for(int i=2;i<strlist.size();++i)
 			{
 				QStringList listKeyValue=strlist[i].split('=');
@@ -112,15 +125,18 @@ void Client::readData()
 				props[listKeyValue[0]]=listKeyValue[1];
 			}
 			//判断有没有size属性，有则进入等待数据模式，否则将命令发送信号，交给相关的槽去进行处理
+			datalen=0;
 			if(props.find("size") != props.end())
 			{
+
 				int datalen=props["size"].toInt(&ok);
+
 				if(!ok)
 				{
 					emit sigRecv(this,strCmdID,strCmdStr,props,QByteArray());
 					continue;
 				}
-				bWaitCommand=false;//进入等待数据模式
+				bWaitingCommand=false;//进入等待数据模式
 				emit sigIn(strCmdLine);
 				break;
 			}
@@ -130,9 +146,13 @@ void Client::readData()
 	}
 	
 	//这里要考虑缓冲太大了是否记录到文件里
-	
-	
-	emit sigRecv(this,QString strCmdID,QString strCmdStr,QString QByteArray);
+	if(buffer.size()>=datalen)
+	{
+		QByteArray data=buffer.left(datalen);
+		emit sigRecv(this,strCmdID,strCmdStr,props,data);
+		bWaitingCommand=true;
+	}
+	//else 继续等待下一批数据到来
 }
 
 void Client::sendData(QString str)

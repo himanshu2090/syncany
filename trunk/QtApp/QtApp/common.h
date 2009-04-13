@@ -37,7 +37,7 @@ static SYNC_COMMAND_STR cmdlist[]=
 	{CMD_STATE,"state"},
 };
 
-int get_cmdtype(const char *strcmd)
+static int get_cmdtype(const char *strcmd)
 {
 	for(int i=0;i<sizeof(cmdlist)/sizeof(SYNC_COMMAND_STR);++i)
 	{
@@ -48,7 +48,7 @@ int get_cmdtype(const char *strcmd)
 	return CMD_UNKNOWN;
 }
 
-const char * get_cmdstr(int nCmdType)
+static const char * get_cmdstr(int nCmdType)
 {
 	for(int i=0;i<sizeof(cmdlist)/sizeof(SYNC_COMMAND_STR);++i)
 	{

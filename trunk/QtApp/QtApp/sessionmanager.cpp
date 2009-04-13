@@ -12,7 +12,7 @@ SessionManager::SessionManager(QObject *parent)
 		syncdb=SyncDB::instance();
 		synconf=Synconf::instance();
 
-		svrhost=synconf->getstr("server_host","5.40.92.214");
+		svrhost=synconf->getstr("server_host","5.7.217.164");
 		svrport=synconf->getstr("server_port","18120");
 		synconf->setstr("server_host",svrhost);
 		synconf->setstr("server_port",svrport);
@@ -33,7 +33,8 @@ SessionManager::SessionManager(QObject *parent)
 		connect(&client,SIGNAL(disconnected(Client *)),this,SLOT(client_disconnected(Client *)));
 
 		//将client传入的内容根据协议解析出命令或响应后再由SM进行调度
-		connect(&client,SIGNAL(sigRecv(Client *,QString ,QString ,QString )),this,SLOT(recv_data(Client *,QString ,QString ,QString)));
+		connect(&client,SIGNAL(sigRecv(Client *,QString ,QString ,QMap<QString,QString> ,QByteArray )),
+			this,SLOT(recv_data(Client *,QString ,QString ,QMap<QString,QString> ,QByteArray )));
 
 		//传出的命令或响应由SM调度交给各个client发送
 
@@ -74,7 +75,8 @@ QString SessionManager::generate_cmdid()
 void SessionManager::ConnectHost()
 {
 	bAutoConnectHost=true;
-	if(client.getSocket()->state()!=QTcpSocket::ConnectedState)
+	QTcpSocket::SocketState sta=client.getSocket()->state();
+	if(sta!=QTcpSocket::ConnectedState && sta != QTcpSocket::ConnectingState)
 	{
 		svrhost=synconf->getstr("server_host","");
 		svrport=synconf->getstr("server_port","");
@@ -120,5 +122,9 @@ void SessionManager::client_disconnected(Client *cl)
 
 void SessionManager::recv_data(Client *cl,QString strCmdID,QString strCmdStr,QMap<QString,QString> props ,QByteArray buffer)
 {
-	
+	QString str=QString::fromLocal8Bit("收到命令：%1,%2,%3,%4");
+	str.arg(strCmdID).arg(strCmdStr).arg(props.size()).arg(buffer.size());
+
+	qDebug(str.toStdString().c_str());
+	emit sigLogger(str);
 }
