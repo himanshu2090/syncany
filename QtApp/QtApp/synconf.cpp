@@ -44,7 +44,7 @@ void Synconf::load_conf()
 			if(str=="") continue;
 			QStringList strKeyValue=str.split("=");
 			if(strKeyValue.size()!=2) continue;
-			m_config[strKeyValue[0]]=strKeyValue[1];
+			m_config[strKeyValue[0]]=strKeyValue[1].remove("\r");
 		}
 	}
 	init_default();
@@ -62,7 +62,7 @@ void Synconf::save_conf()
 	}
 	QString strConfigFile=QDir::currentPath()+"/synconf.ini";
 	QFile qf(strConfigFile);
-	qf.open(QIODevice::Truncate | QIODevice::WriteOnly | QIODevice::Text);
+	qf.open(QIODevice::Truncate | QIODevice::WriteOnly/* | QIODevice::Text*/);
 	qf.write(strConfig.toAscii());
 	qf.close();
 }
