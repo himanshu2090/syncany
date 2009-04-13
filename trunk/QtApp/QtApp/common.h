@@ -21,7 +21,15 @@ enum SYNC_COMMAND
 	CMD_HELLO,
 	CMD_PING,
 	CMD_STATE,
-
+	CMD_ALERT,
+	CMD_WHOAREYOU,
+	CMD_LS,
+	CMD_CD,
+	CMD_GET,
+	CMD_PUT,
+	CMD_RM,
+	CMD_MV,
+	CMD_BYE,
 };
 
 struct SYNC_COMMAND_STR
@@ -35,6 +43,15 @@ static SYNC_COMMAND_STR cmdlist[]=
 	{CMD_HELLO,"hello"},
 	{CMD_PING,"ping"},
 	{CMD_STATE,"state"},
+	{CMD_ALERT,"alert"},
+	{CMD_WHOAREYOU,"whoareyou"},
+	{CMD_LS,"ls"},
+	{CMD_CD,"cd"},
+	{CMD_GET,"get"},
+	{CMD_PUT,"put"},
+	{CMD_RM,"rm"},
+	{CMD_MV,"mv"},
+	{CMD_BYE,"bye"},
 };
 
 static int get_cmdtype(const char *strcmd)
