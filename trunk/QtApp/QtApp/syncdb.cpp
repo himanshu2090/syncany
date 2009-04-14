@@ -61,7 +61,7 @@ CONSTRAINT [sqlite_autoindex_sqout_1] PRIMARY KEY ([cmd_id]));
 
 void SyncDB::createTable() //‘⁄ππ‘Ï∫Ø ˝¿Ôµ˜”√£¨Œ¥º”À¯£¨“ÚŒ™‘⁄¥¥Ω®µ•ÃÂ µ¿˝«∞“—æ≠º”À¯
 {
-	QString strTableName="sqin";
+	QString strTableName=strQueueTableName[QUEUE_IN];
 	if(!m_db.tableExists(strTableName.toStdString().c_str()))
 	{
 		QString strSql;
@@ -78,7 +78,7 @@ void SyncDB::createTable() //‘⁄ππ‘Ï∫Ø ˝¿Ôµ˜”√£¨Œ¥º”À¯£¨“ÚŒ™‘⁄¥¥Ω®µ•ÃÂ µ¿˝«∞“—æ≠º
 			"CONSTRAINT [sqlite_autoindex_%1_1] PRIMARY KEY ([cmd_id]));\n";
 		m_db.execDML(strSql.toStdString().c_str());
 	}
-	strTableName="sqout";
+	strTableName=strQueueTableName[QUEUE_OUT];
 	if(!m_db.tableExists(strTableName.toStdString().c_str()))
 	{
 		QString strSql;
@@ -99,27 +99,118 @@ void SyncDB::createTable() //‘⁄ππ‘Ï∫Ø ˝¿Ôµ˜”√£¨Œ¥º”À¯£¨“ÚŒ™‘⁄¥¥Ω®µ•ÃÂ µ¿˝«∞“—æ≠º
 
 }
 
-void SyncDB::execSql(QString strSql)
+
+int SyncDB::put_cmd(QString strCmdID,QString strCmdStr,QUEUE_ID nQueue)
 {
-	QMutexLocker locker(&g_locker_db);
-	m_db.execDML(strSql.toStdString().c_str());
+	QString strSql="insert into [%1] (cmd_id,tag,cmd_str,create_time) values (%2,%3,'%4',date('now'))";
+	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID).arg(STA_UNSEND).arg(strCmdStr));
 }
 
-void SyncDB::put_cmd(QString strCmdID,QString strCmdStr)
+int SyncDB::tag_cmd(QString strCmdID,int tag,QUEUE_ID nQueue)
 {
-	QMutexLocker locker(&g_locker_db);
-	QString strSql="insert into [%1] (cmd_id,tag,cmd_str,create_time) values (%2,0,'%3',date('now'))";
-	strSql.arg(strCmdID,strCmdStr);
-	m_db.execDML(strSql.toStdString().c_str());
+	QString strSql="update [%1] set tag=%2 where cmd_id=%3";
+	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(tag).arg(strCmdID));
 }
 
-void SyncDB::tag_cmd(QString strCmdID,int tag)
+int SyncDB::tag_cmd(QString strCmdID,int tag,QString strCmdRet,QUEUE_ID nQueue)
 {
-	QMutexLocker locker(&g_locker_db);
+	QString strSql="update [%1] set tag=%2,cmd_ret='%3' where cmd_id=%4";
+	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(tag).arg(strCmdRet).arg(strCmdID));
 }
 
-void SyncDB::tag_cmd(QString strCmdID,int tag,QString strCmdRet)
+bool SyncDB::exist_cmd(QString strCmdID,QUEUE_ID nQueue)
+{
+	QString strSql="select count(*) as cnt from %1 where cmd_id=%2";
+	CppSQLite3Query result=querySql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID));
+	if(!result.eof())
+	{
+		if(!result.fieldIsNull(0))
+		{
+			return (QString(result.getStringField(0)).toInt() > 0);
+		}
+	}
+	return false;
+}
+
+
+CommandMap SyncDB::get_cmd(int tag,QUEUE_ID nQueue)
+{
+	CommandMap props;
+	QString strSql;
+	strSql="select cmd_str from %1 where tag=%2 limit 1";
+	CppSQLite3Query result=querySql(strSql.arg(strQueueTableName[nQueue]).arg(tag));
+	if(!result.eof())
+	{
+		if(!result.fieldIsNull(0))
+		{
+			props=convert_from_cmdline(result.getStringField(0));
+		}
+	}
+	return props;
+}
+
+CommandMap SyncDB::get_cmd(QString strCmdID,QUEUE_ID nQueue)
+{
+	CommandMap props;
+	QString strSql;
+	strSql="select cmd_str from %1 where cmd_id=%2 limit 1";
+	CppSQLite3Query result=querySql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID));
+	if(!result.eof())
+	{
+		if(!result.fieldIsNull(0))
+		{
+			props=convert_from_cmdline(result.getStringField(0));
+		}
+	}
+	return props;
+}
+
+
+int SyncDB::reset_cmd_queue()
+{
+	QString strSql;
+	//Ω” ’∂”¡–‘›≤ª”√¥¶¿Ì
+	strSql="update [%1] set tag=%2 where tag=%3";
+	return execSql(strSql.arg(strQueueTableName[QUEUE_OUT]).arg(STA_UNSEND).arg(STA_SENDING));
+}
+
+
+int SyncDB::execSql(QString strSql)
+{
+	return execSql(strSql.toLocal8Bit());
+}
+
+int SyncDB::execSql(QByteArray strSql)
 {
 	QMutexLocker locker(&g_locker_db);
+	return m_db.execDML(strSql.data());
 }
+
+CppSQLite3Query  SyncDB::querySql(QByteArray strSql)
+{
+	QMutexLocker locker(&g_locker_db);
+	return m_db.execQuery(strSql.data());
+}
+
+CppSQLite3Query  SyncDB::querySql(QString strSql)
+{
+	QMutexLocker locker(&g_locker_db);
+	return m_db.execQuery(strSql.toLocal8Bit().data());
+}
+
+CommandMap SyncDB::singleQuerySql(QString strSql)
+{
+	CppSQLite3Query result=querySql(strSql);
+	CommandMap props;
+	if(!result.eof())
+	{
+		for(int i=0;i<result.numFields();++i)
+		{
+			props[result.fieldName(i)]=result.fieldValue(i);
+		}
+	}
+	return props;
+}
+
+
 

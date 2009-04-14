@@ -54,7 +54,7 @@ void Synconf::save_conf()
 {
 	QMutexLocker locker(&g_locker_synconf);
 	QString strConfig;
-	QMap<QString,QString>::const_iterator it=m_config.constBegin();
+	CommandMap::const_iterator it=m_config.constBegin();
 	while(it!=m_config.end())
 	{
 		strConfig+=it.key()+"="+it.value()+"\n";

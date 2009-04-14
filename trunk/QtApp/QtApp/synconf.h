@@ -14,7 +14,7 @@ public:
 private:
 	static Synconf *m_instance;	
 
-	QMap<QString,QString> m_config;
+	CommandMap m_config;
 
 	void load_conf();
 	void init_default();//将有默认值但未设置的项设置为默认值

@@ -26,7 +26,8 @@ public slots:
 	void DisconnectHost();
 	void client_connected(Client *cl);
 	void client_disconnected(Client *cl);
-	void recv_data(Client *,quint32 nCmdID,QString strCmdStr,QString strCmdLine,QMap<QString,QString> props,QByteArray buffer);
+	int send_data(CommandMap mapCmdLine);
+	void recv_data(Client *,quint32 nCmdID,QString strCmdStr,QString strCmdLine,CommandMap props,QByteArray buffer);
 private:
 	bool bAutoConnectHost;
 	QString svrhost;

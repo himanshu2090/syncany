@@ -24,26 +24,28 @@ signals:
 	void sigLogger(QString str);  //自定义信号.输出其他辅助日志信息
 	void connected(Client *); //表示自己连接成功
 	void disconnected(Client *);//表示自己断开
-	void sigRecv(Client *,quint32 nCmdID,QString strCmdStr,QString strCmdLine,QMap<QString,QString> ,QByteArray strCmdData); //表示已经收到一个完整的命令
+	void sigRecv(Client *,quint32 nCmdID,QString strCmdStr,QString strCmdLine,CommandMap ,QByteArray strCmdData); //表示已经收到一个完整的命令
 public:
 	QTcpSocket *getSocket(){return m_sock;}
 	void ConnectHost(QString host,quint32 port);
 	void DisconnectHost();
 	void connectSignal();
-	void sendData(QString);
-	void say_ping(QString strCmdID);
-	void say_hello(QString strCmdID,QMap<QString,QString> props);
-	void ack_bye(QMap<QString,QString> props);
-	void ack_state(QMap<QString,QString> props,QByteArray data);//可传输数据的版本
-	void ack_state(QMap<QString,QString> props);
+	int sendData(QString);
+	int sendData(QByteArray);
+	int say_ping(QString strCmdID);
+	int say_hello(QString strCmdID,CommandMap props);
+	int ack_bye(CommandMap props);
+	int ack_state(CommandMap props,QByteArray data);//可传输数据的版本
+	int ack_state(CommandMap props);
 
 private:
 	QTcpSocket *m_sock;
 	QMutex m_locker_out;//向外发送可能是多线程并发，必须同步
+	QMutex m_locker_in;//接收数据的同步锁
 	
 	bool bWaitingCommand;
 	QByteArray buffer; //接收缓冲
-	QMap<QString,QString> props;
+	CommandMap props;
 	int nCmdType;
 	QString strCmdID;
 	QString strCmdStr;
