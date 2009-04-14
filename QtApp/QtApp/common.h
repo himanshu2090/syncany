@@ -107,7 +107,30 @@ typedef QMap<QString,QString> CommandMap;
 static QString convert_to_cmdline(CommandMap props)
 {
 	//TODO
-	return "";
+	int id=0;
+	QString strCmdLine;
+	while(1)
+	{
+		QString strCmdID=QString::number(id++);
+		if(props.find(strCmdID)==props.end())
+			break;
+		strCmdLine+=props[strCmdID];
+		strCmdLine+=" ";
+	}
+	if(id<2) return "";
+
+	QList<QString> keys=props.keys();
+	bool ok;
+	for(int i=0;i<keys.size();++i)
+	{
+		keys[i].toInt(&ok);
+		if(ok) continue;
+		strCmdLine+=keys[i];
+		strCmdLine+="=";
+		strCmdLine+=props[keys[i]];
+		strCmdLine+=" ";
+	}
+	return strCmdLine;
 }
 //从命令行转换为map
 static CommandMap convert_from_cmdline(QString strCmdLine)

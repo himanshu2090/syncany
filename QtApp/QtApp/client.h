@@ -32,11 +32,6 @@ public:
 	void connectSignal();
 	int sendData(QString);
 	int sendData(QByteArray);
-	int say_ping(QString strCmdID);
-	int say_hello(QString strCmdID,CommandMap props);
-	int ack_bye(CommandMap props);
-	int ack_state(CommandMap props,QByteArray data);//可传输数据的版本
-	int ack_state(CommandMap props);
 
 private:
 	QTcpSocket *m_sock;
