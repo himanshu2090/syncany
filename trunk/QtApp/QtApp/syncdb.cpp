@@ -171,7 +171,8 @@ int SyncDB::reset_cmd_queue()
 	QString strSql;
 	//接收队列暂不用处理
 	strSql="update [%1] set tag=%2 where tag=%3";
-	return execSql(strSql.arg(strQueueTableName[QUEUE_OUT]).arg(STA_UNSEND).arg(STA_SENDING));
+	execSql(strSql.arg(strQueueTableName[QUEUE_OUT]).arg(STA_UNSEND).arg(STA_SENDING));
+	execSql(strSql.arg(strQueueTableName[QUEUE_IN]).arg(STA_UNSEND).arg(STA_SENDING));
 }
 
 

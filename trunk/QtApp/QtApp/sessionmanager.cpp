@@ -5,6 +5,7 @@ SessionManager::SessionManager(QObject *parent)
 	,heartbeat_count(0)
 	,bAutoConnectHost(false)//不自动连接
 	,client(this)
+	,ping_cmdid(0)
 {
 	try
 	{
@@ -104,7 +105,7 @@ void SessionManager::heartbeat()
 	if(++heartbeat_count > heartbeat_interval)
 	{
 		heartbeat_count=0;
-		client.say_ping(generate_cmdid());
+		say_ping(generate_cmdid());
 	}
 	//TODO:在这里处理未发送的命令
 
@@ -112,13 +113,7 @@ void SessionManager::heartbeat()
 
 void SessionManager::client_connected(Client *cl)
 {
-	CommandMap props;
-	//hello 101 syncany_client=2.1.0.0 protocol=1.0.1.0 platform=symbian-os-s60.3
-	props["syncany_client"]=synconf->getinfo("client_version");
-	props["protocol"]=synconf->getinfo("protocol_version");
-	props["platform"]=synconf->getinfo("os_version");
-
-	cl->say_hello(generate_cmdid(),props);
+	say_hello(Client *cl);
 }
 
 void SessionManager::client_disconnected(Client *cl)
@@ -126,7 +121,7 @@ void SessionManager::client_disconnected(Client *cl)
 }
 
 //返回 nCmdID 
-int SessionManager::send_data(CommandMap mapCmdLine)
+int SessionManager::send_data(CommandMap mapCmdLine,QByteArray buffer)
 {
 //TODO:还需要一个send_data，来处理本地产生的业务命令，将Client的 say语句都迁移到SessionManager里实现	
 	return 0;
@@ -181,18 +176,19 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 		break;
 	case CMD_WHOAREYOU:
 		{
-			CommandMap props;
-			props["sessionid"]=synconf->getstr("session_id");
-			props["user"]=synconf->getstr("user_id");
-			props["pwd"]=synconf->getstr("user_password");
-			props["devuid"]=synconf->getstr("device_id");
-			if(cl->ack_state(props)==ERR_NONE)
+			CommandMap ack_props;
+			ack_props["1"]=props["1"];//回应的命令ID
+			ack_props["sessionid"]=synconf->getstr("session_id");
+			ack_props["user"]=synconf->getstr("user_id");
+			ack_props["pwd"]=synconf->getstr("user_password");
+			ack_props["devuid"]=synconf->getstr("device_id");
+			if(cl->ack_state(ack_props)==ERR_NONE)
 			{
-				syncdb->tag_cmd(props["1"],STA_COMPLETE,QUEUE_IN);
+				syncdb->tag_cmd(ack_props["1"],STA_COMPLETE,QUEUE_IN);
 			}
 			else
 			{
-				syncdb->tag_cmd(props["1"],STA_ERROR,QUEUE_IN);
+				syncdb->tag_cmd(ack_props["1"],STA_ERROR,QUEUE_IN);
 			}
 		}
 		break;
@@ -203,3 +199,81 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 	}
 
 }
+
+// 外发系列协议命令实现
+int SessionManager::say_hello(Client *cl)
+{
+	CommandMap props;
+	//hello 101 syncany_client=2.1.0.0 protocol=1.0.1.0 platform=symbian-os-s60.3
+	props["syncany_client"]=synconf->getinfo("client_version");
+	props["protocol"]=synconf->getinfo("protocol_version");
+	props["platform"]=synconf->getinfo("os_version");
+	porps["0"]=get_cmdstr(CMD_HELLO);
+	props["1"]=generate_cmdid();
+
+	QString strCmdLine=convert_to_cmdline(props);
+	syncdb->put_cmd(props["1"],strCmdLine,QUEUE_OUT);
+	int ret=cl->sendData(strCmdLine);
+	if(ret==ERR_NONE)
+		syncdb->tag_cmd(props["1"],STA_SENDING);
+	//else //send fail....?
+	//  
+	return ret;
+}
+
+int SessionManager::say_ping(Client *cl)
+{
+	QString strCmdLine("ping ");
+	strCmdLine+=generate_cmdid();
+	strCmdLine+="\n";
+	return cl->sendData(strCmdLine);
+}
+
+
+int SessionManager::ack_state(Client *cl,CommandMap props)
+{
+	return ack_state(cl,props,QByteArray());
+}
+
+int SessionManager::ack_state(Client *cl,CommandMap props,QByteArray data)
+{
+	if(data.length()>0 )
+	{
+		//未指定长度，补充之
+		props["size"]=data.length();
+	}
+	else
+	{
+		if(props.find("size")!=props.end())
+			props.remove("size");
+	}
+	props["0"]=get_cmdstr(CMD_STATE);
+
+	QString cmdbuf=convert_to_cmdline(props);
+	if(data.length()>0)
+		cmdbuf.append(data);
+	return sendData(cmdbuf);
+}
+
+
+int SessionManager::ack_bye(Client *cl,CommandMap props)
+{
+	int ret=ERR_UNKNOWN;
+	if(props.find("1")!=props.end())
+	{
+		CommandMap ack_props;
+		ack_props["1"]=props["1"];
+
+
+		QString strCmdID=props["1"];
+		if(strCmdID!=0 && strCmdID.toInt()!=0)
+		{
+			QString strCmdStr="state "+strCmdID+" 200\n";
+			ret=sendData(strCmdStr);
+			m_sock->waitForBytesWritten(100);
+		}
+	}
+	DisconnectHost();
+	return ret;
+}
+
