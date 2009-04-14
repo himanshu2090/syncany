@@ -70,7 +70,7 @@ void Client::stateChanged ( QTcpSocket::SocketState socketState )
 
 void Client::readData()
 {
-	QMutexLocker locker(&m_locker_out);
+	QMutexLocker locker(&m_locker_in);
 	buffer+=m_sock->readAll();
 	if(bWaitingCommand)
 	{
@@ -119,23 +119,8 @@ void Client::readData()
 				continue;
 			}
 			//提取命令携带的属性
-			props.clear();
-			int id=0;
-			for(int i=0;i<strlist.size();++i)
-			{
-				QStringList listKeyValue=strlist[i].split('=');
-				switch(listKeyValue.size()) //对于非=号的单独属性序列，使用数字序号来代表KEY
-				{
-				case 1:
-					props[QString(id++)]=listKeyValue[0];
-					break;
-				case 2:
-					props[listKeyValue[0]]=listKeyValue[1];
-					break;
-				default:
-					continue;
-				}
-			}
+			props=convert_from_cmdline(strCmdLine);
+			
 			//判断有没有size属性，有则进入等待数据模式，否则将命令发送信号，交给相关的槽去进行处理
 			datalen=0;
 			if(props.find("size") != props.end())
@@ -161,37 +146,55 @@ void Client::readData()
 	if(buffer.size()>=datalen)
 	{
 		QByteArray data=buffer.left(datalen);
-		emit sigRecv(this,nCmdID,strCmdStr,strCmdLine,props,data);
+		buffer.remove(0,datalen);
+
+		emit sigRecv(this,strCmdID.toInt(),strCmdStr,strCmdLine,props,data);
 		bWaitingCommand=true;
 	}
 	//else 继续等待下一批数据到来
 }
 
-void Client::sendData(QString str)
+int Client::sendData(QByteArray str)
 {
 	if(m_sock && m_sock->state()==QTcpSocket::ConnectedState)
 	{
 		QMutexLocker locker(&m_locker_out);
-		m_sock->write(str.toAscii());
 		emit sigOut(str);
+		if(m_sock->write(str.data())!=-1)
+		{
+			return ERR_NONE;
+		}
+		else
+		{
+			return ERR_NETWORK_SEND_FAIL;
+		}
 	}
 	else
-		emit sigLogger(QString("SEND:%s fail! server is not connected!").arg(str));
+	{
+		emit sigLogger(QString("SEND:%1 fail! server is not connected!").arg(str.data()));
+		return ERR_NETWORK_CONNECT_FAIL;
+	}
+}
+
+int Client::sendData(QString str)
+{
+	return sendData(str.toAscii());
 }
 
 
-void Client::say_ping(QString strCmdID)
+int Client::say_ping(QString strCmdID)
 {
 	if(m_sock && m_sock->state()==QTcpSocket::ConnectedState)
 	{
 		QString strCmdStr("ping ");
 		strCmdStr+=strCmdID;
 		strCmdStr+="\n";
-		sendData(strCmdStr);
+		return sendData(strCmdStr);
 	}
+	return ERR_NETWORK_CONNECT_FAIL;
 }
 
-void Client::say_hello(QString strCmdID,QMap<QString,QString> props)
+int Client::say_hello(QString strCmdID,CommandMap props)
 {
 	if(m_sock && m_sock->state()==QTcpSocket::ConnectedState)
 	{
@@ -209,31 +212,66 @@ void Client::say_hello(QString strCmdID,QMap<QString,QString> props)
 		}
 
 		strCmdStr+="\n";
-		sendData(strCmdStr);
+		return sendData(strCmdStr);
 	}
+	return ERR_NETWORK_CONNECT_FAIL;
 }
 
-void Client::ack_bye(QMap<QString,QString> props)
+int Client::ack_bye(CommandMap props)
 {
+	int ret=ERR_UNKNOWN;
+
 	if(props.find("1")!=props.end())
 	{
 		QString strCmdID=props["1"];
 		if(strCmdID!=0 && strCmdID.toInt()!=0)
 		{
 			QString strCmdStr="state "+strCmdID+" 200\n";
-			sendData(strCmdStr);
+			ret=sendData(strCmdStr);
 			m_sock->waitForBytesWritten(100);
 		}
 	}
-	m_sock->DisconnectHost();
+	DisconnectHost();
+	return ret;
 }
 
-void Client::ack_state(QMap<QString,QString> props)
+int Client::ack_state(CommandMap props)
 {
+	return ack_state(props,QByteArray());
 }
 
-
-void Client::ack_state(QMap<QString,QString> props,QByteArray data)
+int Client::ack_state(CommandMap props,QByteArray data)
 {
+	if(data.length()>0 )
+	{
+		//未指定长度，补充之
+		props["size"]=data.length();
+	}
+	else
+	{
+		if(props.find("size")!=props.end())
+			props.remove("size");
+	}
+
+	QByteArray cmdbuf="state "+props["1"].toLocal8Bit();
+	QList<QString> keys=props.keys();
+	for(int i=0;i<keys.size();++i)
+	{
+		int nu=keys[i].toInt();
+		if(nu>2)
+		{
+			cmdbuf.append(" ");
+			cmdbuf.append(keys[i]);
+			continue;
+		}
+		cmdbuf.append(" ");
+		cmdbuf.append(keys[i]);
+		cmdbuf.append("=");
+		cmdbuf.append(props[keys[i]]);
+	}
+	cmdbuf.append("\n");
+	if(data.length()>0)
+		cmdbuf.append(data);
+	return sendData(cmdbuf);
 }
 
