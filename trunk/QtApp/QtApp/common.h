@@ -24,17 +24,49 @@ enum ERROR_CODE_LIST
 	ERR_NETWORK_CONNECT_FAIL,
 	ERR_NETWORK_SEND_FAIL,
 };
+/*
+code 	 含义 	使用于
+200 	 一般表示成功执行 	 所有命令
+201  	 需要使用数据通道 	 所有命令
+
+
+400 	命令不支持 	 
+401 	需要鉴权  	 
+403 	鉴权失败  	cd、 get 、 put
+404 	要求的资源不存在 	cd 、 get
+500 	命令执行异常  	所有命令
+501 	通道传输异常 	 所有命令
+502 	服务暂时不可用  	 所有命令
+503 	服务器暂时不可用  	 所有命令
+
+600 	需要注册用户  	whoareyou 
+601 	注册信息格式不正确  	alert
+602 	用户名不存在 	alert 
+603 	用户名已被占用  	alert
+604 	密码不符合规则  	alert 
+
+*/
+enum STATE_CODE
+{
+	STA_OK=200,
+	STA_CMD_UNKNOWN=400,
+	STA_CMD_EXEC_FAIL=500,
+	STA_NOT_FOUND=404,
+	STA_AUTH_FAIL=403,
+	STA_AUTH_NEED=401,
+	STA_NO_SERVICE=502,
+};
 
 //命令（任务）的处理状态
-enum STATUS_LIST
+enum COMMAND_TAG_LIST
 {
-	STA_UNSEND=0,
-	STA_SENDING,
+	TAG_UNSEND=0,
+	TAG_SENDING,
 	//下面几个都是完成状态！
-	STA_COMPLETE,
-	STA_ERROR,
-	STA_ABORT,
-	STA_ABANDON
+	TAG_COMPLETE,
+	TAG_ERROR,
+	TAG_ABORT,
+	TAG_ABANDON
 };
 
 //协议命令列表
@@ -78,7 +110,7 @@ static SYNC_COMMAND_STR cmdlist[]=
 	{CMD_BYE,"bye"},
 };
 
-static int get_cmdtype(const char *strcmd)
+inline int get_cmdtype(const char *strcmd)
 {
 	for(int i=0;i<sizeof(cmdlist)/sizeof(SYNC_COMMAND_STR);++i)
 	{
@@ -89,7 +121,7 @@ static int get_cmdtype(const char *strcmd)
 	return CMD_UNKNOWN;
 }
 
-static const char * get_cmdstr(int nCmdType)
+inline const char * get_cmdstr(int nCmdType)
 {
 	for(int i=0;i<sizeof(cmdlist)/sizeof(SYNC_COMMAND_STR);++i)
 	{
@@ -106,7 +138,6 @@ typedef QMap<QString,QString> CommandMap;
 //将map转换为命令行
 static QString convert_to_cmdline(CommandMap props)
 {
-	//TODO
 	int id=0;
 	QString strCmdLine;
 	while(1)

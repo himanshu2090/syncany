@@ -103,7 +103,7 @@ void SyncDB::createTable() //‘⁄ππ‘Ï∫Ø ˝¿Ôµ˜”√£¨Œ¥º”À¯£¨“ÚŒ™‘⁄¥¥Ω®µ•ÃÂ µ¿˝«∞“—æ≠º
 int SyncDB::put_cmd(QString strCmdID,QString strCmdStr,QUEUE_ID nQueue)
 {
 	QString strSql="insert into [%1] (cmd_id,tag,cmd_str,create_time) values (%2,%3,'%4',date('now'))";
-	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID).arg(STA_UNSEND).arg(strCmdStr));
+	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID).arg(TAG_UNSEND).arg(strCmdStr));
 }
 
 int SyncDB::tag_cmd(QString strCmdID,int tag,QUEUE_ID nQueue)
@@ -171,8 +171,8 @@ int SyncDB::reset_cmd_queue()
 	QString strSql;
 	//Ω” ’∂”¡–‘›≤ª”√¥¶¿Ì
 	strSql="update [%1] set tag=%2 where tag=%3";
-	execSql(strSql.arg(strQueueTableName[QUEUE_OUT]).arg(STA_UNSEND).arg(STA_SENDING));
-	execSql(strSql.arg(strQueueTableName[QUEUE_IN]).arg(STA_UNSEND).arg(STA_SENDING));
+	return execSql(strSql.arg(strQueueTableName[QUEUE_OUT]).arg(TAG_UNSEND).arg(TAG_SENDING)) +
+	execSql(strSql.arg(strQueueTableName[QUEUE_IN]).arg(TAG_UNSEND).arg(TAG_SENDING));
 }
 
 
