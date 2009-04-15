@@ -4,7 +4,7 @@ QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 	: QDialog(parent, flags)
 {
 	ui.setupUi(this);
-	ui.pushButton->hide();
+	//ui.pushButton->hide();
 	syncdb=SyncDB::instance();
 	synconf=Synconf::instance();
 	QString svrhost=synconf->getstr("server_host","5.1.193.51");
@@ -26,7 +26,9 @@ QtApp::~QtApp()
 
 void QtApp::on_pushButton_clicked()
 {
-	ui.textLogger->append("Hi,I'v been clicked!");
+	//ui.textLogger->append("Hi,I'v been clicked!");
+	synconf->setstr("server_host",ui.textHost->text());
+	synconf->setstr("server_port",ui.textPort->text());
 }
 
 void QtApp::on_btnSend_clicked()

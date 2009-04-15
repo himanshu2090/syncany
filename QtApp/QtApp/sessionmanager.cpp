@@ -75,7 +75,7 @@ QString SessionManager::generate_cmdid()
 	
 	CommandMap mp=syncdb->singleQuerySql("select max(cmd_id) as mid from sqout");
 	quint32 maxid=mp["mid"].toInt();
-	if(maxid>cmdid)
+	if(maxid>=cmdid)
 		cmdid=maxid+1;
 	synconf->setstr("current_cmdid",QString::number(cmdid+1));
 	return QString::number(cmdid);

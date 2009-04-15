@@ -22,38 +22,12 @@
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton" >
-   <property name="geometry" >
-    <rect>
-     <x>20</x>
-     <y>20</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text" >
-    <string>PushButton</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btnSend" >
-   <property name="geometry" >
-    <rect>
-     <x>510</x>
-     <y>120</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text" >
-    <string>Send</string>
-   </property>
-  </widget>
   <widget class="QTextEdit" name="textInput" >
    <property name="geometry" >
     <rect>
      <x>10</x>
      <y>80</y>
-     <width>491</width>
+     <width>471</width>
      <height>64</height>
     </rect>
    </property>
@@ -61,7 +35,7 @@
   <widget class="QLabel" name="label" >
    <property name="geometry" >
     <rect>
-     <x>480</x>
+     <x>10</x>
      <y>0</y>
      <width>111</width>
      <height>16</height>
@@ -69,91 +43,6 @@
    </property>
    <property name="text" >
     <string>Protocol Tester</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btnClear" >
-   <property name="geometry" >
-    <rect>
-     <x>510</x>
-     <y>90</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text" >
-    <string>Clear</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btnConnect" >
-   <property name="geometry" >
-    <rect>
-     <x>330</x>
-     <y>50</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text" >
-    <string>Connect</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btnDisconnect" >
-   <property name="geometry" >
-    <rect>
-     <x>410</x>
-     <y>50</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text" >
-    <string>Disconnect</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="textHost" >
-   <property name="geometry" >
-    <rect>
-     <x>50</x>
-     <y>50</y>
-     <width>161</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2" >
-   <property name="geometry" >
-    <rect>
-     <x>10</x>
-     <y>50</y>
-     <width>31</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text" >
-    <string>Host:</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_3" >
-   <property name="geometry" >
-    <rect>
-     <x>220</x>
-     <y>50</y>
-     <width>54</width>
-     <height>14</height>
-    </rect>
-   </property>
-   <property name="text" >
-    <string>Port:</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="textPort" >
-   <property name="geometry" >
-    <rect>
-     <x>250</x>
-     <y>50</y>
-     <width>51</width>
-     <height>20</height>
-    </rect>
    </property>
   </widget>
   <widget class="QTextEdit" name="textLoggerIn" >
@@ -176,18 +65,130 @@
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_2" >
+  <widget class="QGroupBox" name="groupBox" >
    <property name="geometry" >
     <rect>
-     <x>180</x>
+     <x>10</x>
      <y>20</y>
-     <width>75</width>
-     <height>23</height>
+     <width>401</width>
+     <height>51</height>
     </rect>
    </property>
-   <property name="text" >
-    <string>PushButton</string>
+   <property name="title" >
+    <string>ServerInfo</string>
    </property>
+   <widget class="QLabel" name="label_2" >
+    <property name="geometry" >
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>31</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Host:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="textHost" >
+    <property name="geometry" >
+     <rect>
+      <x>40</x>
+      <y>20</y>
+      <width>161</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3" >
+    <property name="geometry" >
+     <rect>
+      <x>210</x>
+      <y>20</y>
+      <width>54</width>
+      <height>14</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Port:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="textPort" >
+    <property name="geometry" >
+     <rect>
+      <x>250</x>
+      <y>20</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton" >
+    <property name="geometry" >
+     <rect>
+      <x>310</x>
+      <y>20</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Set Server</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_2" >
+   <property name="geometry" >
+    <rect>
+     <x>490</x>
+     <y>0</y>
+     <width>101</width>
+     <height>151</height>
+    </rect>
+   </property>
+   <property name="title" >
+    <string>Operation</string>
+   </property>
+   <widget class="QWidget" name="" >
+    <property name="geometry" >
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>79</width>
+      <height>120</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout" >
+     <item>
+      <widget class="QPushButton" name="btnConnect" >
+       <property name="text" >
+        <string>Connect</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnDisconnect" >
+       <property name="text" >
+        <string>Disconnect</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnClear" >
+       <property name="text" >
+        <string>Clear</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnSend" >
+       <property name="text" >
+        <string>Send</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11" />
