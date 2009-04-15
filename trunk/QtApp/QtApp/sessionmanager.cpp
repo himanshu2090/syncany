@@ -112,9 +112,10 @@ void SessionManager::heartbeat()
 	}
 	//判断ping包是否超时
 	QDateTime qtm=QDateTime::currentDateTime();
-	if(ping_acktime.secsTo(qtm) >  timeout_secs)
+	if(ping_acktime.addSecs(timeout_secs) > qtm)
 	{
 		//超时，需要重新连接了
+		qDebug((ping_acktime.toString()+" "+qtm.toString()).toStdString().c_str());
 		ping_cl=null;
 		DisconnectHost();
 		ConnectHost();
@@ -138,6 +139,7 @@ void SessionManager::heartbeat()
 void SessionManager::client_connected(Client *cl)
 {
 	ping_cl=cl;
+	ping_acktime=QDateTime::currentDateTime();
 	say_hello(ping_cl);
 }
 
