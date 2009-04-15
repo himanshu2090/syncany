@@ -7,7 +7,7 @@ QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 	ui.pushButton->hide();
 	syncdb=SyncDB::instance();
 	synconf=Synconf::instance();
-	QString svrhost=synconf->getstr("server_host","5.7.217.164");
+	QString svrhost=synconf->getstr("server_host","5.1.193.51");
 	QString svrport=synconf->getstr("server_port","18120");
 	synconf->setstr("server_host",svrhost);
 	synconf->setstr("server_port",svrport,true);

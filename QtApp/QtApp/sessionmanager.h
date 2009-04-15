@@ -33,8 +33,13 @@ public:
 	int say_ping(Client *cl);
 	int say_hello(Client *cl);
 	int ack_bye(Client *cl,CommandMap props);
-	int ack_state(Client *cl,CommandMap props,QByteArray data);//可传输数据的版本
-	int ack_state(Client *cl,CommandMap props);
+	int ack_state(Client *cl,CommandMap props,QByteArray data=QByteArray());//可传输数据的版本
+
+	int do_job(CommandMap props,Client *cl);
+	int do_sendcmd(CommandMap props,Client *cl);
+private:
+	void dispatch_task(); //将未完成的任务分法给客户端的其他模块来完成
+	void resend_cmd();//将未发送的命令重新发送
 
 private:
 	bool bAutoConnectHost;
@@ -46,11 +51,15 @@ private:
 	quint32 heartbeat_count;
 	quint32 heartbeat_interval;
 	QMutex m_locker; //普通锁，同步对自身资源的操作
-
+	QMutex m_locker_cmdid; //同步锁，控制cmdid的产生
 	int ping_cmdid;
-
+	QDateTime ping_acktime;
+	int timeout_secs;
+	Client *ping_cl;
 public:
 	Client client;
 };
 
 #endif // SESSIONMANAGER_H
+
+
