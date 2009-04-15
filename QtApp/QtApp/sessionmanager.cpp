@@ -112,10 +112,10 @@ void SessionManager::heartbeat()
 	}
 	//判断ping包是否超时
 	QDateTime qtm=QDateTime::currentDateTime();
-	if(ping_acktime.addSecs(timeout_secs) > qtm)
+	if(ping_acktime.addSecs(timeout_secs) < qtm && bAutoConnectHost)
 	{
 		//超时，需要重新连接了
-		qDebug((ping_acktime.toString()+" "+qtm.toString()).toStdString().c_str());
+		qDebug((ping_acktime.toString()+" "+qtm.toString()).toLocal8Bit().data());
 		ping_cl=null;
 		DisconnectHost();
 		ConnectHost();
@@ -145,6 +145,8 @@ void SessionManager::client_connected(Client *cl)
 
 void SessionManager::client_disconnected(Client *cl)
 {
+	if(ping_cl == cl)
+		ping_cl=null;
 }
 
 //返回 nCmdID 
@@ -162,22 +164,23 @@ send_data
 void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QString strCmdLine,CommandMap props ,QByteArray buffer)
 {
 	QString str=QString::fromLocal8Bit("收到命令：%1,%2,%3,%4,%5");
-	QByteArray st=str.arg(nCmdID).arg(strCmdStr).arg(strCmdLine).arg(props.size()).arg(buffer.size()).toLocal8Bit();
-	qDebug(st.data());
-	emit sigLogger(st);
+	str=str.arg(nCmdID).arg(strCmdStr).arg(strCmdLine).arg(props.size()).arg(buffer.size()).toLocal8Bit();
+	qDebug(str.toLocal8Bit().data());
+	emit sigLogger(str);
 
 	//除了响应state，其余命令都应该先入队列，后续处理时对于复杂的任务，考虑开线程去处理
-	if(nCmdID == CMD_UNKNOWN)
+	int nCmdType=get_cmdtype(strCmdStr.toLocal8Bit().data());
+	if(nCmdType == CMD_UNKNOWN)
 	{
-		emit sigLogger("错误！未知命令："+strCmdLine);
+		emit sigLogger(QString::fromLocal8Bit("错误！未知命令：")+strCmdLine);
 		return ;
 	}
-	if(nCmdID != CMD_STATE )
+	if(nCmdType != CMD_STATE )
 	{
 		if(syncdb->exist_cmd(props["1"]),QUEUE_IN)
 		{
 			//收到的命令之前已经收到过，反馈命令重复错误
-			emit sigLogger("收到重复的CMDID："+strCmdLine);
+			emit sigLogger(QString::fromLocal8Bit("收到重复的CMDID：")+strCmdLine);
 			CommandMap ack_props;
 			ack_props["0"]=get_cmdstr(CMD_STATE);
 			ack_props["1"]=props["1"];
@@ -194,7 +197,7 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 		//收到state的处理
 		//从发送队列里找该命令，如果找不到，或者命令已经完成，则丢弃，但是记录日志，否则修改命令为完成
 		//如果是PING命令的响应，则不入命令队列，所以应该在成员变量里记录和比较
-		if(nCmdID==ping_cmdid)
+		if(nCmdType==ping_cmdid)
 		{
 			ping_acktime=QDateTime::currentDateTime();
 			emit sigLogger("ping ack @"+ping_acktime.toString());
@@ -208,10 +211,10 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 				syncdb->tag_cmd(props["1"],TAG_COMPLETE,strCmdLine,QUEUE_OUT);
 			}
 			else
-				emit sigLogger("收到错误的命令响应A："+strCmdLine);
+				emit sigLogger(QString::fromLocal8Bit("收到错误的命令响应A：")+strCmdLine);
 		}
 		else
-			emit sigLogger("收到错误的命令响应B："+strCmdLine);
+			emit sigLogger(QString::fromLocal8Bit("收到错误的命令响应B：")+strCmdLine);
 	}
 }
 
@@ -309,7 +312,7 @@ void SessionManager::resend_cmd()//将未发送的命令重新发送
 		if(cmdfields.size()<1)
 			break;
 		CommandMap props=convert_from_cmdline(cmdfields["cmd_str"]);
-		int nCmdType=get_cmdtype(cmdfields[props[0]].toLocal8Bit().data());
+		int nCmdType=get_cmdtype(cmdfields[props["0"]].toLocal8Bit().data());
 		if(nCmdType==CMD_HELLO || nCmdType==CMD_PUT || nCmdType==CMD_GET||props.find("size")!=props.end())
 		{
 			//对于一些不适合重做的任务，全部标记为放弃
@@ -343,7 +346,7 @@ int SessionManager::do_job(CommandMap props,Client *cl)
 	case CMD_ALERT:
 		{
 			//TODO：处理注册结果，事件通知——需要向上层冒泡，能处理的自行处理
-			emit sigLogger("收到Alert命令，向上冒泡通知："+convert_to_cmdline(props));
+			emit sigLogger(QString::fromLocal8Bit("收到Alert命令，向上冒泡通知：")+convert_to_cmdline(props));
 		}
 		break;
 	case CMD_WHOAREYOU:
@@ -365,7 +368,7 @@ int SessionManager::do_job(CommandMap props,Client *cl)
 		}
 		break;
 	default:
-		emit sigLogger("错误！未知命令："+convert_to_cmdline(props));
+		emit sigLogger(QString::fromLocal8Bit("错误！未知命令：")+convert_to_cmdline(props));
 		break;
 	}
 	return ERR_NONE;

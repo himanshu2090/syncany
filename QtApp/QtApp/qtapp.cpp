@@ -49,17 +49,20 @@ void QtApp::on_btnClear_clicked()
 
 void QtApp::log(QString str)
 {
-	ui.textLogger->append("LOG:"+str);
+	QString so="LOG:"+str;
+	ui.textLogger->append(so.toLocal8Bit().data());
 }
 
 void QtApp::login(QString str)
 {
-	ui.textLoggerIn->append("<<"+str);
+	QString so="<<:"+str;
+	ui.textLoggerIn->append(so.toLocal8Bit().data());
 }
 
 void QtApp::logout(QString str)
 {
-	ui.textLoggerOut->append(">>"+str);
+	QString so=">>:"+str;
+	ui.textLoggerOut->append(so.toLocal8Bit().data());
 }
 
 void QtApp::on_btnConnect_clicked()
