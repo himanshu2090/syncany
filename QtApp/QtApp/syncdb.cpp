@@ -102,20 +102,26 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊýÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀýÇ°ÒÑ¾­¼
 
 int SyncDB::put_cmd(QString strCmdID,QString strCmdStr,QUEUE_ID nQueue)
 {
-	QString strSql="insert into [%1] (cmd_id,tag,cmd_str,create_time) values (%2,%3,'%4',date('now'))";
+	QString strSql="insert into [%1] (cmd_id,tag,cmd_str,create_time) values (%2,%3,'%4',datetime('now'))";
 	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID).arg(TAG_UNSEND).arg(strCmdStr));
-}
-
-int SyncDB::tag_cmd(QString strCmdID,int tag,QUEUE_ID nQueue)
-{
-	QString strSql="update [%1] set tag=%2 where cmd_id=%3";
-	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(tag).arg(strCmdID));
 }
 
 int SyncDB::tag_cmd(QString strCmdID,int tag,QString strCmdRet,QUEUE_ID nQueue)
 {
-	QString strSql="update [%1] set tag=%2,cmd_ret='%3' where cmd_id=%4";
-	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(tag).arg(strCmdRet).arg(strCmdID));
+	QString strTime;
+	switch(tag)
+	{
+	case TAG_UNSEND:
+		strTime="";
+		break;
+	case TAG_SENDING:
+		strTime=",send_time=datetime('now')";
+		break;
+	default:
+		strTime=",end_time=datetime('now')";
+	}
+	QString strSql="update [%1] set tag=%2%5,cmd_ret='%3' where cmd_id=%4";
+	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(tag).arg(strCmdRet).arg(strCmdID).arg(strTime));
 }
 
 bool SyncDB::exist_cmd(QString strCmdID,QUEUE_ID nQueue)
@@ -130,23 +136,6 @@ bool SyncDB::exist_cmd(QString strCmdID,QUEUE_ID nQueue)
 		}
 	}
 	return false;
-}
-
-
-CommandMap SyncDB::get_cmd(int tag,QUEUE_ID nQueue)
-{
-	CommandMap props;
-	QString strSql;
-	strSql="select cmd_str from %1 where tag=%2 limit 1";
-	CppSQLite3Query result=querySql(strSql.arg(strQueueTableName[nQueue]).arg(tag));
-	if(!result.eof())
-	{
-		if(!result.fieldIsNull(0))
-		{
-			props=convert_from_cmdline(result.getStringField(0));
-		}
-	}
-	return props;
 }
 
 CommandMap SyncDB::get_cmd(QString strCmdID,QUEUE_ID nQueue)

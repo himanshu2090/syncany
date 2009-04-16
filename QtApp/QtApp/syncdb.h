@@ -34,11 +34,9 @@ public:
 public slots:
 	//命令相关的槽接口
 	int put_cmd(QString strCmdID,QString strCmdLine,QUEUE_ID nQueue=QUEUE_IN);
-	int tag_cmd(QString strCmdID,int tag,QUEUE_ID nQueue=QUEUE_IN);
-	int tag_cmd(QString strCmdID,int tag,QString strCmdRet,QUEUE_ID nQueue=QUEUE_IN);
+	int tag_cmd(QString strCmdID,int tag,QString strCmdRet=QString(""),QUEUE_ID nQueue=QUEUE_IN);
 	bool exist_cmd(QString strCmdID,QUEUE_ID nQueue=QUEUE_IN);
 	int reset_cmd_queue();//将所有未完成的命令转为未发送状态，在程序退出或启动时执行，以便重发命令
-	CommandMap get_cmd(int tag,QUEUE_ID nQueue=QUEUE_IN);
 	CommandMap get_cmd(QString strCmdID,QUEUE_ID nQueue=QUEUE_IN);
 
 	//可同步的SQL语句执行接口
