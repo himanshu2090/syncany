@@ -194,6 +194,34 @@ static CommandMap convert_from_cmdline(QString strCmdLine)
 	return props;
 }
 
+//接口类
+class IFile:public QObject
+{
+	virtual QDateTiem getLastModifyTime()=0; //最后修改时间
+	virtual quint32 getAnchor()=0; //锚点信息
+	virtual quint32 setAnchor(quint32)=0;//设置锚点
+	virtual quint32 size()=0; //内容大小
+	virtual QByteArray getData()=0;//获取内容
+	virtual quint32 setData(QByteArray)=0;//设置内容
+	virtual QString getUri()=0;//获取路径信息
+};
+
+typedef QPointer<IFile> PtrFile;
+
+class IFolder:public QObject
+{
+	QVector<PtrFile> do_ls(QString strUri);
+};
+typedef QPointer<IFolder> PtrFolder;
+
+class IDevice:public QObject
+{
+	PtrFolder getFolder(QString strUri);
+};
+
+
+typedef QPointer<IDevice> PtrDevice;
+
 #endif
 
 
