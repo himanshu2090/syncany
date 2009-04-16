@@ -75,3 +75,8 @@ void QtApp::on_btnDisconnect_clicked()
 {
 	sm->DisconnectHost();
 }
+
+void QtApp::on_pushButton_2_clicked()
+{
+
+}

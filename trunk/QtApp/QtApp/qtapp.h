@@ -21,6 +21,7 @@ private:
 	Synconf *synconf;
 	SyncDB *syncdb;
 private slots:
+	void on_pushButton_2_clicked();
 	void on_btnDisconnect_clicked();
 	void on_btnConnect_clicked();
 	void on_btnClear_clicked();

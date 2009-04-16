@@ -131,6 +131,7 @@ void Client::readData()
 
 				if(!ok)
 				{
+					emit sigIn(strCmdLine);
 					emit sigRecv(this,nCmdID,strCmdStr,strCmdLine,props,QByteArray());
 					continue;
 				}
@@ -140,6 +141,7 @@ void Client::readData()
 			}
 			//∑¢ÀÕ√¸¡Ó–≈∫≈
 			emit sigRecv(this,nCmdID,strCmdStr,strCmdLine,props,QByteArray());
+			emit sigIn(strCmdLine);
 		}
 	}
 	
