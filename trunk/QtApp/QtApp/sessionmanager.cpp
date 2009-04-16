@@ -163,8 +163,8 @@ send_data
 */
 void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QString strCmdLine,CommandMap props ,QByteArray buffer)
 {
-	QString str=QString::fromLocal8Bit("收到命令：%1,%2,%3,%4,%5");
-	str=str.arg(nCmdID).arg(strCmdStr).arg(strCmdLine).arg(props.size()).arg(buffer.size()).toLocal8Bit();
+	QString str=QString::fromLocal8Bit("收到命令：%1");
+	str=str.arg(strCmdLine);
 	qDebug(str.toLocal8Bit().data());
 	emit sigLogger(str);
 
@@ -330,7 +330,8 @@ int SessionManager::do_job(CommandMap props,Client *cl)
 
 	int nCmdID=props["1"].toInt();
 	syncdb->tag_cmd(props["1"],TAG_SENDING,QUEUE_IN);
-	switch(nCmdID)
+	int nCmdType=get_cmdtype(props["0"].toStdString().c_str());
+	switch(nCmdType)
 	{
 	case CMD_BYE:
 		{

@@ -169,7 +169,7 @@ CommandMap SyncDB::get_cmd(QString strCmdID,QUEUE_ID nQueue)
 int SyncDB::reset_cmd_queue()
 {
 	QString strSql;
-	strSql="update [%1] set tag=%2 where tag=%3 and cmd_str like '%4%%'";
+	strSql="update [%1] set tag=%2 where tag=%3 and cmd_str like '%4%'";
 	execSql(strSql.arg(strQueueTableName[QUEUE_OUT]).arg(TAG_ABANDON).arg(TAG_SENDING).arg(get_cmdstr(CMD_HELLO)));
 	strSql="update [%1] set tag=%2 where tag=%3";
 	int ret = execSql(strSql.arg(strQueueTableName[QUEUE_OUT]).arg(TAG_UNSEND).arg(TAG_SENDING)) +
