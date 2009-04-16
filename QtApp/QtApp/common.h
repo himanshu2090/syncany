@@ -156,6 +156,7 @@ static QString convert_to_cmdline(CommandMap props)
 	{
 		keys[i].toInt(&ok);
 		if(ok) continue;
+		if(keys[i].length()==0 || props[keys[i]].length()==0) continue;
 		strCmdLine+=keys[i];
 		strCmdLine+="=";
 		strCmdLine+=props[keys[i]];
@@ -175,9 +176,17 @@ static CommandMap convert_from_cmdline(QString strCmdLine)
 		switch(kvList.size())
 		{
 		case 1:
-			props[QString::number(id++)]=kvList[0];break;
+			if(kvList[0].length()>0)
+			{
+				props[QString::number(id++)]=kvList[0];
+			}
+			break;
 		case 2:
-			props[kvList[0]]=kvList[1];break;
+			if(kvList[0].length()>0 && kvList[1].length()>0)
+			{
+				props[kvList[0]]=kvList[1];
+			}
+			break;
 		default://其他情况丢弃
 			break;
 		}

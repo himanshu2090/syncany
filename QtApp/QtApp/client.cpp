@@ -65,7 +65,7 @@ void Client::hostFound ()
 
 void Client::stateChanged ( QTcpSocket::SocketState socketState )
 {
-	emit sigLogger(QString("stateChanged!%1").arg(socketState));
+	//emit sigLogger(QString("stateChanged!%1").arg(socketState));
 }
 
 void Client::readData()
@@ -82,6 +82,7 @@ void Client::readData()
 			if(lb==-1)	return ; //命令必然是以\n结束
 
 			strCmdLine = buffer.left(lb);
+			strCmdLine.remove('\r');
 			//QByteArray bt = buffer.left(lb);
 			////strCmdLine.fromAscii(bt.constData());
 			//strCmdLine=bt;

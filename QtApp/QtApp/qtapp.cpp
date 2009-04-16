@@ -50,19 +50,19 @@ void QtApp::on_btnClear_clicked()
 void QtApp::log(QString str)
 {
 	QString so="LOG:"+str;
-	ui.textLogger->append(so.toLocal8Bit().data());
+	ui.textLogger->append(so);
 }
 
 void QtApp::login(QString str)
 {
 	QString so="<<:"+str;
-	ui.textLoggerIn->append(so.toLocal8Bit().data());
+	ui.textLoggerIn->append(so);
 }
 
 void QtApp::logout(QString str)
 {
 	QString so=">>:"+str;
-	ui.textLoggerOut->append(so.toLocal8Bit().data());
+	ui.textLoggerOut->append(so);
 }
 
 void QtApp::on_btnConnect_clicked()
