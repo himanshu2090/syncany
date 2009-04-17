@@ -210,7 +210,10 @@ typedef QPointer<IFile> PtrFile;
 
 class IFolder:public QObject
 {
-	QVector<PtrFile> do_ls(QString strUri);
+	virtual QVector<PtrFile> do_ls(QString strUri)=0;
+	virtual IFolder *do_cd(QString strUri)=0;
+	virtual IFolder *do_mkdir(QString strUri,bool hasFilename)=0;
+	virtual quint32 do_rm(QString strUri)=0;
 };
 typedef QPointer<IFolder> PtrFolder;
 
