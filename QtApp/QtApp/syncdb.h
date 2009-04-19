@@ -17,6 +17,16 @@ static const char* strQueueTableName[]=
 	"sqout"
 };
 
+enum SYNC_TYPES
+{
+	SYNC_FILES=0,
+};
+
+static const char* strSyncTableName[]=
+{
+	"sync_files",
+};
+
 class SyncDB : public QObject
 {
 	Q_OBJECT
@@ -33,11 +43,15 @@ public:
 
 public slots:
 	//命令相关的槽接口
-	int put_cmd(QString strCmdID,QString strCmdLine,QUEUE_ID nQueue=QUEUE_IN);
-	int tag_cmd(QString strCmdID,int tag,QString strCmdRet=QString(""),QUEUE_ID nQueue=QUEUE_IN);
-	bool exist_cmd(QString strCmdID,QUEUE_ID nQueue=QUEUE_IN);
-	int reset_cmd_queue();//将所有未完成的命令转为未发送状态，在程序退出或启动时执行，以便重发命令
-	CommandMap get_cmd(QString strCmdID,QUEUE_ID nQueue=QUEUE_IN);
+	int cmd_put(QString strCmdID,QString strCmdLine,QUEUE_ID nQueue=QUEUE_IN);
+	int cmd_tag(QString strCmdID,int tag,QString strCmdRet=QString(""),QUEUE_ID nQueue=QUEUE_IN);
+	bool cmd_exist(QString strCmdID,QUEUE_ID nQueue=QUEUE_IN);
+	int cmd_reset_queue();//将所有未完成的命令转为未发送状态，在程序退出或启动时执行，以便重发命令
+	CommandMap cmd_get(QString strCmdID,QUEUE_ID nQueue=QUEUE_IN);
+
+	int sync_files_update(PtrFile);
+	int sync_files_remove(QString strFilename);
+	PtrFile sync_files_load(QString strFilename);
 
 	//可同步的SQL语句执行接口
 	int execSql(QString strSql);

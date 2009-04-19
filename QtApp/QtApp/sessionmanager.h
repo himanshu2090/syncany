@@ -56,6 +56,9 @@ private:
 	QDateTime ping_acktime;
 	int timeout_secs;
 	Client *ping_cl;
+
+	//本地文件同步目录
+	QString strSyncDirectory;
 public:
 	Client client;
 };
