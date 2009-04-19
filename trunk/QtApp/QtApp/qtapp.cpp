@@ -3,6 +3,12 @@
 QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 	: QDialog(parent, flags)
 {
+
+	QTextCodec *codec=QTextCodec::codecForName("GB2312");
+	QTextCodec::setCodecForLocale(codec);
+	QTextCodec::setCodecForTr(codec);
+	QTextCodec::setCodecForCStrings(codec);
+
 	ui.setupUi(this);
 	//ui.pushButton->hide();
 	syncdb=SyncDB::instance();

@@ -59,6 +59,22 @@ CREATE TABLE [sqout] (
 CONSTRAINT [sqlite_autoindex_sqout_1] PRIMARY KEY ([cmd_id]));
 */
 
+/*
+ÎÄ¼þÍ¬²½±í£º
+filename	±¾µØ´ÅÅÌÎÄ¼þÃû£¨´øÈ«Â·¾¶£©
+filesize	±¾µØÎÄ¼þ´óÐ¡
+uri_local	ÎÞÏà¶ÔURI±íÊ¾
+CREATE TABLE [sync_files] (
+[fid] AUTOINC, 
+[path] VARCHAR NOT NULL, 
+[filename] VARCHAR NOT NULL, 
+[filesize] VARCHAR NOT NULL, 
+[uri_local] VARCHAR NOT NULL, 
+[anchor] INT, 
+[anchor_time] DATETIME, 
+[modify_time] DATETIME);
+*/
+
 void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊýÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀýÇ°ÒÑ¾­¼ÓËø
 {
 	QString strTableName=strQueueTableName[QUEUE_IN];
@@ -75,7 +91,7 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊýÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀýÇ°ÒÑ¾­¼
 			"[create_time] DATETIME,\n"
 			"[send_time] DATETIME, \n"
 			"[end_time] DATETIME, \n"
-			"CONSTRAINT [sqlite_autoindex_%1_1] PRIMARY KEY ([cmd_id]));\n";
+			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_1] PRIMARY KEY ([cmd_id]));\n";
 		m_db.execDML(strSql.toStdString().c_str());
 	}
 	strTableName=strQueueTableName[QUEUE_OUT];
@@ -92,21 +108,36 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊýÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀýÇ°ÒÑ¾­¼
 			"[create_time] DATETIME,\n"
 			"[send_time] DATETIME, \n"
 			"[end_time] DATETIME, \n"
-			"CONSTRAINT [sqlite_autoindex_%1_1] PRIMARY KEY ([cmd_id]));\n";
+			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_1] PRIMARY KEY ([cmd_id]));\n";
 		m_db.execDML(strSql.toStdString().c_str());
 	}
 	//ÔÚÕâÀïÌí¼ÓÆäËûÐèÒª³õÊ¼»¯´´½¨µÄ±í
-
+	strTableName=strSyncTableName[SYNC_FILES];
+	if(!m_db.tableExists(strTableName.toStdString().c_str()))
+	{
+		QString strSql;
+		strSql+="CREATE TABLE [";
+		strSql+=strTableName+"] (\n"
+			"[fid] AUTOINC, \n"
+			"[filename] VARCHAR NOT NULL,\n" 
+			"[filesize] VARCHAR NOT NULL, \n"
+			"[uri_local] VARCHAR NOT NULL, \n"
+			"[anchor] INT, \n"
+			"[anchor_time] DATETIME, \n"
+			"[modify_time] DATETIME,\n"
+			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_path_filename] PRIMARY KEY ([path], [filename]));\n"
+			m_db.execDML(strSql.toStdString().c_str());
+	}
 }
 
 
-int SyncDB::put_cmd(QString strCmdID,QString strCmdStr,QUEUE_ID nQueue)
+int SyncDB::cmd_put(QString strCmdID,QString strCmdStr,QUEUE_ID nQueue)
 {
 	QString strSql="insert into [%1] (cmd_id,tag,cmd_str,create_time) values (%2,%3,'%4',datetime('now'))";
 	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID).arg(TAG_UNSEND).arg(strCmdStr));
 }
 
-int SyncDB::tag_cmd(QString strCmdID,int tag,QString strCmdRet,QUEUE_ID nQueue)
+int SyncDB::cmd_tag(QString strCmdID,int tag,QString strCmdRet,QUEUE_ID nQueue)
 {
 	QString strTime;
 	switch(tag)
@@ -124,7 +155,7 @@ int SyncDB::tag_cmd(QString strCmdID,int tag,QString strCmdRet,QUEUE_ID nQueue)
 	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(tag).arg(strCmdRet).arg(strCmdID).arg(strTime));
 }
 
-bool SyncDB::exist_cmd(QString strCmdID,QUEUE_ID nQueue)
+bool SyncDB::cmd_exist(QString strCmdID,QUEUE_ID nQueue)
 {
 	QString strSql="select count(*) as cnt from %1 where cmd_id=%2";
 	CppSQLite3Query result=querySql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID));
@@ -138,7 +169,7 @@ bool SyncDB::exist_cmd(QString strCmdID,QUEUE_ID nQueue)
 	return false;
 }
 
-CommandMap SyncDB::get_cmd(QString strCmdID,QUEUE_ID nQueue)
+CommandMap SyncDB::cmd_get(QString strCmdID,QUEUE_ID nQueue)
 {
 	CommandMap props;
 	QString strSql;
@@ -155,7 +186,7 @@ CommandMap SyncDB::get_cmd(QString strCmdID,QUEUE_ID nQueue)
 }
 
 
-int SyncDB::reset_cmd_queue()
+int SyncDB::cmd_reset_queue()
 {
 	QString strSql;
 	strSql="update [%1] set tag=%2 where tag=%3 and cmd_str like '%4%'";
@@ -202,6 +233,21 @@ CommandMap SyncDB::singleQuerySql(QString strSql)
 		}
 	}
 	return props;
+}
+
+int SyncDB::sync_files_update(PtrFile)
+{
+	return 0;
+}
+
+int SyncDB::sync_files_remove(QString strFilename)
+{
+	return 0;
+}
+
+PtrFile SyncDB::sync_files_load(QString strFilename)
+{
+	return QPointer();
 }
 
 
