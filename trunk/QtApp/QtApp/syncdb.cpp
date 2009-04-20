@@ -125,7 +125,7 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊýÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀýÇ°ÒÑ¾­¼
 			"[anchor] INT, \n"
 			"[anchor_time] DATETIME, \n"
 			"[modify_time] DATETIME,\n"
-			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_path_filename] PRIMARY KEY ([path], [filename]));\n"
+			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_filename] PRIMARY KEY ([filename]));\n";
 			m_db.execDML(strSql.toStdString().c_str());
 	}
 }
@@ -247,8 +247,12 @@ int SyncDB::sync_files_remove(QString strFilename)
 
 PtrFile SyncDB::sync_files_load(QString strFilename)
 {
-	return QPointer();
+	return PtrFile();
 }
 
+QList<PtrFile> SyncDB::sync_files_load_all()
+{
+	return QList<PtrFile> ();
+}
 
 

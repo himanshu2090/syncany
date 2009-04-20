@@ -18,7 +18,6 @@ SessionManager::SessionManager(QObject *parent)
 		svrport=synconf->getstr("server_port");
 		synconf->setstr("server_host",svrhost);
 		synconf->setstr("server_port",svrport);
-		strSyncDirector=synconf->getstr("
 
 		QString strTemp=synconf->getstr("heartbeat_interval","1000");
 		synconf->setstr("heartbeat_interval",strTemp);
@@ -61,8 +60,6 @@ SessionManager::SessionManager(QObject *parent)
 
 SessionManager::~SessionManager()
 {
-	if(timer!=null)
-		delete timer;
 	syncdb->cmd_reset_queue();
 }
 

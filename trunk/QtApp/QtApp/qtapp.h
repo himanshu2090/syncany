@@ -6,6 +6,7 @@
 #include "sessionmanager.h"
 #include "synconf.h"
 #include "syncdb.h"
+#include "localfilewatcher.h"
 
 class QtApp : public QDialog
 {
@@ -15,11 +16,14 @@ public:
 	QtApp(QWidget *parent = 0, Qt::WFlags flags = 0);
 	~QtApp();
 
+
 private:
 	Ui::QtAppClass ui;
-	SessionManager *sm;
+	QPointer<SessionManager> sm;
+	QPointer<LocalFileWatcher> watcher;
 	Synconf *synconf;
 	SyncDB *syncdb;
+
 private slots:
 	void on_pushButton_2_clicked();
 	void on_btnDisconnect_clicked();
@@ -30,6 +34,8 @@ private slots:
 	void log(QString str);
 	void login(QString str);
 	void logout(QString str);
+
+	void local_files_changed(QList<QString> strFiles);
 };
 
 #endif // QTAPP_H

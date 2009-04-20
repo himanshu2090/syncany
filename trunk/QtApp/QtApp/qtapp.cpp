@@ -15,18 +15,21 @@ QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 	synconf=Synconf::instance();
 	QString svrhost=synconf->getstr("server_host","5.1.193.51");
 	QString svrport=synconf->getstr("server_port","18120");
+
 	synconf->setstr("server_host",svrhost);
 	synconf->setstr("server_port",svrport,true);
 	ui.textHost->setText(svrhost);
 	ui.textPort->setText(svrport);
 	sm=new SessionManager(this);
+	watcher=new LocalFileWatcher(this);
+
+	connect(watcher.data(),SIGNAL(filesChanged(QList<QString> )),this,SLOT(local_files_changed(QList<QString>)));
+
 }
 
 QtApp::~QtApp()
 {
 	synconf->save_conf();
-	if(sm!=null)
-		delete sm;
 }
 
 
@@ -85,4 +88,15 @@ void QtApp::on_btnDisconnect_clicked()
 void QtApp::on_pushButton_2_clicked()
 {
 
+}
+
+void QtApp::local_files_changed(QList<QString> strFiles)
+{
+	QString str;
+	for(int i=0;i<strFiles.size();++i)
+	{
+		str.append(strFiles[i]);
+		str.append("\n");
+	}
+	log(str);
 }

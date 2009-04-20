@@ -4,6 +4,7 @@
 #include <QtCore/QtCore>
 #include <QtNetwork/QtNetwork>
 #include <QSysInfo>
+#include <QDateTime>
 
 #include "CppSQLite3.h"
 
@@ -136,68 +137,16 @@ inline const char * get_cmdstr(int nCmdType)
 typedef QMap<QString,QString> CommandMap;
 
 //将map转换为命令行
-static QString convert_to_cmdline(CommandMap props)
-{
-	int id=0;
-	QString strCmdLine;
-	while(1)
-	{
-		QString strCmdID=QString::number(id++);
-		if(props.find(strCmdID)==props.end())
-			break;
-		strCmdLine+=props[strCmdID];
-		strCmdLine+=" ";
-	}
-	if(id<2) return "";
+QString convert_to_cmdline(CommandMap props);
 
-	QList<QString> keys=props.keys();
-	bool ok;
-	for(int i=0;i<keys.size();++i)
-	{
-		keys[i].toInt(&ok);
-		if(ok) continue;
-		if(keys[i].length()==0 || props[keys[i]].length()==0) continue;
-		strCmdLine+=keys[i];
-		strCmdLine+="=";
-		strCmdLine+=props[keys[i]];
-		strCmdLine+=" ";
-	}
-	return strCmdLine;
-}
 //从命令行转换为map
-static CommandMap convert_from_cmdline(QString strCmdLine)
-{
-	CommandMap props;
-	QStringList strList=strCmdLine.split(' ');
-	int id=0;
-	for(int i=0;i<strList.size();++i)
-	{
-		QStringList kvList=strList[i].split('=');
-		switch(kvList.size())
-		{
-		case 1:
-			if(kvList[0].length()>0)
-			{
-				props[QString::number(id++)]=kvList[0];
-			}
-			break;
-		case 2:
-			if(kvList[0].length()>0 && kvList[1].length()>0)
-			{
-				props[kvList[0]]=kvList[1];
-			}
-			break;
-		default://其他情况丢弃
-			break;
-		}
-	}
-	return props;
-}
+CommandMap convert_from_cmdline(QString strCmdLine);
 
 //接口类
 class IFile:public QObject
 {
-	virtual QDateTiem getLastModifyTime()=0; //最后修改时间
+public:
+	virtual QDateTime getLastModifyTime()=0; //最后修改时间
 	virtual quint32 getAnchor()=0; //锚点信息
 	virtual quint32 setAnchor(quint32)=0;//设置锚点
 	virtual quint32 size()=0; //内容大小
@@ -210,6 +159,7 @@ typedef QPointer<IFile> PtrFile;
 
 class IFolder:public QObject
 {
+public:
 	virtual QVector<PtrFile> do_ls(QString strUri)=0;
 	virtual IFolder *do_cd(QString strUri)=0;
 	virtual IFolder *do_mkdir(QString strUri,bool hasFilename)=0;
@@ -219,7 +169,10 @@ typedef QPointer<IFolder> PtrFolder;
 
 class IDevice:public QObject
 {
-	PtrFolder getFolder(QString strUri);
+public:
+	virtual PtrFolder getFolder(QString strUri)=0;
+signals:
+	void alert(QString strFile);
 };
 
 
