@@ -4,7 +4,7 @@
 #include "common.h"
 #include "synconf.h"
 #include "syncdb.h"
-class LocalFileWatcher : public QObject
+class LocalFileWatcher : public QObject,public CDirectoryChangeHandler
 {
 	Q_OBJECT
 
@@ -17,11 +17,13 @@ private:
 	SyncDB *syncdb;
 	//本地文件同步目录
 	QString strSyncDirectory;
-	QPointer<QFileSystemWatcher> watcher;
+	QPointer<QTimer> timer;
+	QMap<QString,PtrFile> ptrfiles;
+	
 signals:
 	void filesChanged(QList<QString> strFiles);
-public slots:
-	void directoryChanged(const QString &strPath);
+private slots:
+	void heartbeat();
 };
 
 #endif // LOCALFILEWATCHER_H

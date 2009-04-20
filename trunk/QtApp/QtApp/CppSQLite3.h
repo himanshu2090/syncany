@@ -30,7 +30,7 @@
 
 #include "sqlite3.h"
 #include <cstdio>
-#include <cstring>
+#include <QString>
 
 #define CPPSQLITE_ERROR 1000
 

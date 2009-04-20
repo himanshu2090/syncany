@@ -52,7 +52,7 @@ public slots:
 	int sync_files_update(PtrFile);
 	int sync_files_remove(QString strFilename);
 	PtrFile sync_files_load(QString strFilename);
-	QList<PtrFile> sync_files_load_all();
+	QMap<QString,PtrFile> sync_files_load_all();
 
 	//可同步的SQL语句执行接口
 	int execSql(QString strSql);

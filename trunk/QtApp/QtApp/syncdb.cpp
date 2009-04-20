@@ -250,9 +250,9 @@ PtrFile SyncDB::sync_files_load(QString strFilename)
 	return PtrFile();
 }
 
-QList<PtrFile> SyncDB::sync_files_load_all()
+QMap<QString,PtrFile>SyncDB::sync_files_load_all()
 {
-	return QList<PtrFile> ();
+	return QMap<QString,PtrFile>();
 }
 
 
