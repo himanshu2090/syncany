@@ -47,7 +47,7 @@ private:
 	QString svrport;
 	SyncDB *syncdb;
 	Synconf *synconf;
-	QTimer *timer;
+	QPointer<QTimer> timer;
 	quint32 heartbeat_count;
 	quint32 heartbeat_interval;
 	QMutex m_locker; //普通锁，同步对自身资源的操作
@@ -57,8 +57,6 @@ private:
 	int timeout_secs;
 	Client *ping_cl;
 
-	//本地文件同步目录
-	QString strSyncDirectory;
 public:
 	Client client;
 };
