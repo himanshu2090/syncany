@@ -23,7 +23,7 @@ QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 	sm=new SessionManager(this);
 	watcher=new LocalFileWatcher(this);
 
-	connect(watcher.data(),SIGNAL(filesChanged(QList<QString> )),this,SLOT(local_files_changed(QList<QString>)));
+	connect(watcher.data(),SIGNAL(filesChanged(QStringList &)),this,SLOT(local_files_changed(QStringList &)));
 
 }
 
@@ -58,19 +58,19 @@ void QtApp::on_btnClear_clicked()
 
 void QtApp::log(QString str)
 {
-	QString so="LOG:"+str;
+	QString so="LOG:"+str.trimmed();
 	ui.textLogger->append(so);
 }
 
 void QtApp::login(QString str)
 {
-	QString so="<<:"+str;
+	QString so="<<:"+str.trimmed();
 	ui.textLoggerIn->append(so);
 }
 
 void QtApp::logout(QString str)
 {
-	QString so=">>:"+str;
+	QString so=">>:"+str.trimmed();
 	ui.textLoggerOut->append(so);
 }
 
@@ -90,7 +90,7 @@ void QtApp::on_pushButton_2_clicked()
 
 }
 
-void QtApp::local_files_changed(QList<QString> strFiles)
+void QtApp::local_files_changed(QStringList & strFiles)
 {
 	QString str;
 	for(int i=0;i<strFiles.size();++i)
@@ -98,5 +98,8 @@ void QtApp::local_files_changed(QList<QString> strFiles)
 		str.append(strFiles[i]);
 		str.append("\n");
 	}
-	log(str);
+	
+	if(str!="")
+		log(str);
 }
+

@@ -127,7 +127,7 @@ void Client::readData()
 			if(props.find("size") != props.end())
 			{
 
-				int datalen=props["size"].toInt(&ok);
+                                props["size"].toInt(&ok);
 
 				if(!ok)
 				{
