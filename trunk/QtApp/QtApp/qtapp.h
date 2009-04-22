@@ -35,7 +35,7 @@ private slots:
 	void login(QString str);
 	void logout(QString str);
 
-	void local_files_changed(QList<QString> strFiles);
+	void local_files_changed(QStringList &strFiles);
 };
 
 #endif // QTAPP_H

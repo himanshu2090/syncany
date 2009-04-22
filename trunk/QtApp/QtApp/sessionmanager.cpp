@@ -175,19 +175,22 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 	}
 	if(nCmdType != CMD_STATE )
 	{
-		if(syncdb->cmd_exist(props["1"]),QUEUE_IN)
+		if(nCmdType != CMD_WHOAREYOU)
 		{
-			//收到的命令之前已经收到过，反馈命令重复错误
-			emit sigLogger(QString::fromLocal8Bit("收到重复的CMDID：")+strCmdLine);
-			CommandMap ack_props;
-			ack_props["0"]=get_cmdstr(CMD_STATE);
-			ack_props["1"]=props["1"];
-			ack_props["2"]=QString::number(STA_CMD_EXEC_FAIL);
-			ack_state(cl,ack_props);
-			return ;
+			if(syncdb->cmd_exist(props["1"]),QUEUE_IN)
+			{
+				//收到的命令之前已经收到过，反馈命令重复错误
+				emit sigLogger(QString::fromLocal8Bit("收到重复的CMDID：")+strCmdLine);
+				CommandMap ack_props;
+				ack_props["0"]=get_cmdstr(CMD_STATE);
+				ack_props["1"]=props["1"];
+				ack_props["2"]=QString::number(STA_CMD_EXEC_FAIL);
+				ack_state(cl,ack_props);
+				return ;
+			}
+			//新命令，先添加到数据库里，然后再做本次任务分发
+			syncdb->cmd_put(props["1"],strCmdLine,QUEUE_IN);
 		}
-		//新命令，先添加到数据库里，然后再做本次任务分发
-		syncdb->cmd_put(props["1"],strCmdLine,QUEUE_IN);
 		do_job(props,cl);
 	}
 	else

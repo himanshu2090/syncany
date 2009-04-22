@@ -4,7 +4,7 @@
 #include "common.h"
 #include "synconf.h"
 #include "syncdb.h"
-class LocalFileWatcher : public QObject,public CDirectoryChangeHandler
+class LocalFileWatcher : public QObject
 {
 	Q_OBJECT
 
@@ -21,7 +21,7 @@ private:
 	QMap<QString,PtrFile> ptrfiles;
 	
 signals:
-	void filesChanged(QList<QString> strFiles);
+	void filesChanged(QStringList &strFiles);
 private slots:
 	void heartbeat();
 };

@@ -113,7 +113,7 @@ static SYNC_COMMAND_STR cmdlist[]=
 
 inline int get_cmdtype(const char *strcmd)
 {
-	for(int i=0;i<sizeof(cmdlist)/sizeof(SYNC_COMMAND_STR);++i)
+        for(unsigned int i=0;i<sizeof(cmdlist)/sizeof(SYNC_COMMAND_STR);++i)
 	{
 		SYNC_COMMAND_STR cmd=cmdlist[i];
 		if(QString::compare(strcmd,cmd.cmdstr/* ,Qt::CaseInsensitive */)==0)
@@ -124,7 +124,7 @@ inline int get_cmdtype(const char *strcmd)
 
 inline const char * get_cmdstr(int nCmdType)
 {
-	for(int i=0;i<sizeof(cmdlist)/sizeof(SYNC_COMMAND_STR);++i)
+        for(unsigned int i=0;i<sizeof(cmdlist)/sizeof(SYNC_COMMAND_STR);++i)
 	{
 		SYNC_COMMAND_STR cmd=cmdlist[i];
 		if(cmd.cmdid==nCmdType)
@@ -147,6 +147,7 @@ class IFile:public QObject
 {
 public:
 	virtual QDateTime getLastModifyTime()=0; //最后修改时间
+	virtual QDateTime getAnchorTime()=0;
 	virtual quint32 getAnchor()=0; //锚点信息
 	virtual quint32 setAnchor(quint32)=0;//设置锚点
 	virtual quint32 size()=0; //内容大小
