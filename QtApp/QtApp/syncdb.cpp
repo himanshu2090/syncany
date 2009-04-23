@@ -64,15 +64,19 @@ CONSTRAINT [sqlite_autoindex_sqout_1] PRIMARY KEY ([cmd_id]));
 filename	±¾µØ´ÅÅÌÎÄ¼şÃû£¨´øÈ«Â·¾¶£©
 filesize	±¾µØÎÄ¼ş´óĞ¡
 uri_local	ÎŞÏà¶ÔURI±íÊ¾
+anchor Ãªµã£¨·şÎñÆ÷²úÉú£©
+anchor_time Ãªµã¶ÔÓ¦µÄ×îºóĞŞ¸ÄÊ±¼ä£¬±¾µØ´æ´¢£¬ÔÚ¸üĞÂÃªµãÊ±¸üĞÂ
+modify_time ×îºóĞŞ¸ÄÊ±¼ä
+
 CREATE TABLE [sync_files] (
 [fid] AUTOINC, 
-[path] VARCHAR NOT NULL, 
-[filename] VARCHAR NOT NULL, 
-[filesize] VARCHAR NOT NULL, 
 [uri_local] VARCHAR NOT NULL, 
+[filename] VARCHAR , 
+[filesize] INT , 
 [anchor] INT, 
 [anchor_time] DATETIME, 
-[modify_time] DATETIME);
+[modify_time] DATETIME,
+CONSTRAINT [sqlite_autoindex_sync_files_uri_local] PRIMARY KEY ([uri_local]));
 */
 
 void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊıÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀıÇ°ÒÑ¾­¼ÓËø
@@ -111,23 +115,7 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊıÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀıÇ°ÒÑ¾­¼
 			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_1] PRIMARY KEY ([cmd_id]));\n";
 		m_db.execDML(strSql.toStdString().c_str());
 	}
-	//ÔÚÕâÀïÌí¼ÓÆäËûĞèÒª³õÊ¼»¯´´½¨µÄ±í
-	strTableName=strSyncTableName[SYNC_FILES];
-	if(!m_db.tableExists(strTableName.toStdString().c_str()))
-	{
-		QString strSql;
-		strSql+="CREATE TABLE [";
-		strSql+=strTableName+"] (\n"
-			"[fid] AUTOINC, \n"
-			"[filename] VARCHAR NOT NULL,\n" 
-			"[filesize] VARCHAR NOT NULL, \n"
-			"[uri_local] VARCHAR NOT NULL, \n"
-			"[anchor] INT, \n"
-			"[anchor_time] DATETIME, \n"
-			"[modify_time] DATETIME,\n"
-			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_filename] PRIMARY KEY ([filename]));\n";
-			m_db.execDML(strSql.toStdString().c_str());
-	}
+	
 }
 
 
@@ -235,24 +223,8 @@ CommandMap SyncDB::singleQuerySql(QString strSql)
 	return props;
 }
 
-int SyncDB::sync_files_update(PtrFile)
+bool SyncDB::tableExists(QString strTable)
 {
-	return 0;
+	return m_db.tableExists(strTable.toStdString().c_str());
 }
-
-int SyncDB::sync_files_remove(QString strFilename)
-{
-	return 0;
-}
-
-PtrFile SyncDB::sync_files_load(QString strFilename)
-{
-	return PtrFile();
-}
-
-QMap<QString,PtrFile>SyncDB::sync_files_load_all()
-{
-	return QMap<QString,PtrFile>();
-}
-
 

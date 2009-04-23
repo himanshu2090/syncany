@@ -1,4 +1,6 @@
 #include "localfilewatcher.h"
+#include "syncbasefile.h"
+#include "syncbasedir.h"
 
 LocalFileWatcher::LocalFileWatcher(QObject *parent)
 	: QObject(parent)
@@ -9,7 +11,7 @@ LocalFileWatcher::LocalFileWatcher(QObject *parent)
 	timer=new QTimer(this);
 	connect(timer.data(), SIGNAL(timeout()), this, SLOT(heartbeat()));
 	timer->start(1000);
-	ptrfiles=syncdb->sync_files_load_all();
+	ptrfiles=SyncBaseFile::getAllFiles();
 }
 
 LocalFileWatcher::~LocalFileWatcher()
@@ -20,7 +22,7 @@ LocalFileWatcher::~LocalFileWatcher()
 void list_files(QFileInfo fi,QStringList &dirs)
 {
 	qDebug("try list_files(%s)",fi.absoluteFilePath().toStdString().c_str());
-    QFileInfoList fil=QDir(fi.absoluteFilePath()).entryInfoList();
+    QFileInfoList fil=QDir(fi.absoluteFilePath()).entryInfoList(QDir::NoDotAndDotDot);
     for(unsigned int i=0;i<fil.size();++i)
     {
 		if(fil[i].fileName()== "." || fil[i].fileName()== "..") //ееЁЩ"." ".."
@@ -40,21 +42,32 @@ void LocalFileWatcher::heartbeat()
     QStringList dirs_all;
 	QStringList dirs_update;
     list_files(QFileInfo(strSyncDirectory),dirs_all);
-	ptrfiles=syncdb->sync_files_load_all();
+	ptrfiles=SyncBaseFile::getAllFiles();
 	for(quint32 i=0;i<dirs_all.size();++i)
 	{
-		QMap<QString,PtrFile>::iterator it=ptrfiles.find(dirs_all[i]);
+		QString strUri=SyncBaseDir::local2uri(dirs_all[i]);
+		QMap<QString,PtrFile>::iterator it=ptrfiles.find(strUri);
+		QFileInfo qfi(dirs_all[i]);
 		if(it==ptrfiles.end())
 		{
-			dirs_update.append(dirs_all[i]);
+			dirs_update.append(strUri);
+			PtrFile pf=new SyncBaseFile();
+			pf->setLastModifyTime(qfi.lastModified());
+			pf->setSize(qfi.size());
+			pf->setLocalUri(qfi.absoluteFilePath());
+			pf->setUri(strUri);
+			pf->flush();
 		}
 		else
 		{
-			QFileInfo qfi(dirs_all[i]);
 			PtrFile pf=it.value();
 			if(pf->getLastModifyTime()!=qfi.lastModified())
 			{
-				dirs_update.append(dirs_all[i]);
+				dirs_update.append(strUri);
+				pf->setLastModifyTime(qfi.lastModified());
+				pf->setSize(qfi.size());
+				pf->setLocalUri(qfi.absoluteFilePath());
+				pf->flush();
 			}
 		}
 	}
