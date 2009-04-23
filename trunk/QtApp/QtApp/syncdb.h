@@ -49,18 +49,13 @@ public slots:
 	int cmd_reset_queue();//将所有未完成的命令转为未发送状态，在程序退出或启动时执行，以便重发命令
 	CommandMap cmd_get(QString strCmdID,QUEUE_ID nQueue=QUEUE_IN);
 
-	int sync_files_update(PtrFile);
-	int sync_files_remove(QString strFilename);
-	PtrFile sync_files_load(QString strFilename);
-	QMap<QString,PtrFile> sync_files_load_all();
-
 	//可同步的SQL语句执行接口
 	int execSql(QString strSql);
 	int execSql(QByteArray strSql);
 	CppSQLite3Query querySql(QByteArray strSql);
 	CppSQLite3Query querySql(QString strSql);
 	CommandMap singleQuerySql(QString strSql);
-
+	bool tableExists(QString);
 private:
 	int m_type;
 	QString m_strTable;
