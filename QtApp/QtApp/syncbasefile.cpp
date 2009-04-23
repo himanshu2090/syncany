@@ -10,13 +10,14 @@ modify_time 最后修改时间
 
 CREATE TABLE [sync_files] (
 [fid] AUTOINC, 
-[uri_local] VARCHAR NOT NULL, 
+[uri] VARCHAR NOT NULL, 
 [filename] VARCHAR , 
 [filesize] INT , 
 [anchor] INT, 
 [anchor_time] DATETIME, 
 [modify_time] DATETIME,
-CONSTRAINT [sqlite_autoindex_sync_files_uri_local] PRIMARY KEY ([uri_local]));
+CONSTRAINT [sqlite_autoindex_sync_files_uri] PRIMARY KEY ([uri]));
+
 
 */
 SyncBaseFile::SyncBaseFile(QObject *parent)
