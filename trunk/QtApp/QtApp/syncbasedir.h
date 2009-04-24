@@ -15,6 +15,7 @@ public:
 	virtual PtrFolder do_mkdir(QString strUri,bool hasFilename);
 	virtual quint32 do_rm(QString strUri);
 
+	static QString local2uri(QString);
 private:
 	
 };
