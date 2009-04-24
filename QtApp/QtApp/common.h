@@ -147,7 +147,7 @@ CommandMap convert_from_cmdline(QString strCmdLine);
 class IFile:public QObject
 {
 public:
-	IFile(QObject *parent):QObject(parent){}
+	IFile(QObject *parent=null):QObject(parent){}
 
 	virtual QByteArray getData()=0;//获取内容
 	virtual QDateTime getLastModifyTime()=0; //最后修改时间
@@ -174,7 +174,7 @@ typedef QPointer<IFolder> PtrFolder;
 class IFolder:public QObject
 {
 public:
-	IFolder(QObject *parent):QObject(parent){}
+	IFolder(QObject *parent=null):QObject(parent){}
 	virtual QMap<QString,PtrFile> do_ls(QString strUri)=0;
 	virtual PtrFolder do_cd(QString strUri)=0;
 	virtual PtrFolder do_mkdir(QString strUri,bool hasFilename)=0;
@@ -184,7 +184,7 @@ public:
 class IDevice:public QObject
 {
 public:
-	IDevice(QObject *parent):QObject(parent){}
+	IDevice(QObject *parent=null):QObject(parent){}
 	virtual PtrFolder getFolder(QString strUri)=0;
 signals:
 	void alert(QString strFile);
