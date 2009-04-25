@@ -2,6 +2,7 @@
 #define SYNCBASEDIR_H
 
 #include "common.h"
+#include "synconf.h"
 
 class SyncBaseDir : public IFolder
 {
@@ -15,9 +16,8 @@ public:
 	virtual PtrFolder do_mkdir(QString strUri,bool hasFilename);
 	virtual quint32 do_rm(QString strUri);
 
-	static QString local2uri(QString);
 private:
-	
+	Synconf *synconf;
 };
 
 #endif // SYNCBASEDIR_H

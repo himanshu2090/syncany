@@ -11,6 +11,7 @@ LocalFileWatcher::LocalFileWatcher(QObject *parent)
 	timer=new QTimer(this);
 	connect(timer.data(), SIGNAL(timeout()), this, SLOT(heartbeat()));
 	timer->start(1000);
+	SyncBaseFile::createTable();
 	ptrfiles=SyncBaseFile::getAllFiles();
 }
 
@@ -22,7 +23,7 @@ LocalFileWatcher::~LocalFileWatcher()
 void list_files(QFileInfo fi,QStringList &dirs)
 {
 	qDebug("try list_files(%s)",fi.absoluteFilePath().toStdString().c_str());
-    QFileInfoList fil=QDir(fi.absoluteFilePath()).entryInfoList(QDir::NoDotAndDotDot);
+    QFileInfoList fil=QDir(fi.absoluteFilePath()).entryInfoList();//QDir::NoDotAndDotDot);
     for(unsigned int i=0;i<fil.size();++i)
     {
 		if(fil[i].fileName()== "." || fil[i].fileName()== "..") //排除"." ".."
@@ -45,7 +46,7 @@ void LocalFileWatcher::heartbeat()
 	ptrfiles=SyncBaseFile::getAllFiles();
 	for(quint32 i=0;i<dirs_all.size();++i)
 	{
-		QString strUri=SyncBaseDir::local2uri(dirs_all[i]);
+		QString strUri=local2uri(dirs_all[i]);
 		QMap<QString,PtrFile>::iterator it=ptrfiles.find(strUri);
 		QFileInfo qfi(dirs_all[i]);
 		if(it==ptrfiles.end())
@@ -61,7 +62,9 @@ void LocalFileWatcher::heartbeat()
 		else
 		{
 			PtrFile pf=it.value();
-			if(pf->getLastModifyTime()!=qfi.lastModified())
+			//qDebug(pf->getLastModifyTime().toString().toStdString().c_str());
+			//qDebug(qfi.lastModified().toString().toStdString().c_str());
+			if(pf->getLastModifyTime().toString()!=qfi.lastModified().toString())
 			{
 				dirs_update.append(strUri);
 				pf->setLastModifyTime(qfi.lastModified());
@@ -71,6 +74,26 @@ void LocalFileWatcher::heartbeat()
 			}
 		}
 	}
-	emit filesChanged(dirs_update);
+	if(dirs_update.size()>0)
+		emit filesChanged(dirs_update);
+}
+
+
+QString LocalFileWatcher::local2uri(QString strLocal)
+{
+	Synconf *synconf=Synconf::instance();
+	QString strSyncDirectory=synconf->getstr("sync_dir","C:/download/");
+	QString strTemp=strLocal.replace('\\','/');
+	if(strTemp.startsWith(strSyncDirectory,Qt::CaseInsensitive))
+	{
+		strTemp.remove(0,strSyncDirectory.length());
+	}
+	else
+	{
+		qDebug("错误的本地目录：%s",strTemp.toStdString().c_str());
+	}
+	if(!strTemp.startsWith("/"))
+		return "/"+strTemp;
+	return strTemp;
 }
 

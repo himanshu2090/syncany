@@ -31,7 +31,7 @@ public:
 	virtual quint32 flush();//将变更记录下来
 
 public :
-
+	static void createTable();
 	static PtrFile getFileByUri(QString strUri);
 	static PtrFile getFileByFileName(QString strFilename);
 	static QMap<QString,PtrFile> getAllFiles(); //获取数据库里的全部数据

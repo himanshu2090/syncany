@@ -24,8 +24,24 @@ SyncBaseFile::SyncBaseFile(QObject *parent)
 	: IFile(parent)
 {
 	syncdb=SyncDB::instance();
-	//在这里添加需要初始化创建的表
 	pszTableName=strSyncTableName[SYNC_FILES];
+
+	datasize=-1;
+	uri="";
+	filename="";
+	anchor=0;
+}
+
+SyncBaseFile::~SyncBaseFile()
+{
+
+}
+
+void SyncBaseFile::createTable()
+{
+	//在这里添加需要初始化创建的表
+	SyncDB *syncdb=SyncDB::instance();
+	const char *pszTableName=strSyncTableName[SYNC_FILES];
 	QString strTableName=pszTableName;
 	if(!syncdb->tableExists(strTableName.toStdString().c_str()))
 	{
@@ -42,17 +58,8 @@ SyncBaseFile::SyncBaseFile(QObject *parent)
 			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_uri] PRIMARY KEY ([uri]));\n";
 		syncdb->execSql(strSql);
 	}
-
-	datasize=-1;
-	uri="";
-	filename="";
-	anchor=0;
 }
 
-SyncBaseFile::~SyncBaseFile()
-{
-
-}
 QDateTime SyncBaseFile::getLastModifyTime() //最后修改时间
 {
 	if(lastmodify.isValid())
@@ -140,9 +147,9 @@ quint32 SyncBaseFile::flush()
 	{
 		QString strSql="update sync_files set uri='"+uri+"'";
 		if(filename!="")
-			strSql+=",filename='"+filename+"',filesize="+datasize;
+			strSql+=",filename='"+filename+"',filesize="+QString::number(datasize);
 		if(anchor>0)
-			strSql+=",anchor="+anchor;
+			strSql+=",anchor="+QString::number(anchor);
 		if(anchortime.isValid())
 			strSql+=",anchor_time='"+anchortime.toString(Qt::ISODate)+"'";
 		if(lastmodify.isValid())
@@ -152,15 +159,31 @@ quint32 SyncBaseFile::flush()
 	}
 	else
 	{
-		QString strSql="insert into sync_files set uri='"+uri+"'";
+		QString strField="(uri";
+		QString strValue="('"+uri+"'";
 		if(filename!="")
-			strSql+=",filename='"+filename+"',filesize="+datasize;
+		{
+			strField+=",filename,filesize";
+			strValue+=",'"+filename+"',"+QString::number(datasize);
+		}
 		if(anchor>0)
-			strSql+=",anchor="+anchor;
+		{
+			strField+=",anchor";
+			strValue+=","+QString::number(anchor);
+		}
 		if(anchortime.isValid())
-			strSql+=",anchor_time='"+anchortime.toString(Qt::ISODate)+"'";
+		{
+			strField+=",anchor_time";
+			strValue+=",'"+anchortime.toString(Qt::ISODate)+"'";
+		}
 		if(lastmodify.isValid())
-			strSql+=",modify_time='"+lastmodify.toString(Qt::ISODate)+"'";
+		{
+			strField+=",modify_time";
+			strValue+=",'"+lastmodify.toString(Qt::ISODate)+"'";
+		}
+		strField+=")";
+		strValue+=")";
+		QString strSql="insert into sync_files "+ strField+" values "+strValue;
 		return syncdb->execSql(strSql);
 	}
 }
