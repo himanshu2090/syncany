@@ -19,7 +19,10 @@ private:
 	QString strSyncDirectory;
 	QPointer<QTimer> timer;
 	QMap<QString,PtrFile> ptrfiles;
-	
+
+public:
+	static QString local2uri(QString);
+
 signals:
 	void filesChanged(QStringList &strFiles);
 private slots:
