@@ -61,3 +61,107 @@ CommandMap convert_from_cmdline(QString strCmdLine)
 }
 
 
+
+QByteArray raw_url_encode(QByteArray &s)
+{
+	QByteArray str;
+	int x, y;
+	int len=s.length();
+	for(x=0,y=0;len--;++x,++y)
+	{
+		str[y]=s[x];
+		if ((str[y] < '0' && str[y] != '-' && str[y] != '.') ||
+			(str[y] < 'A' && str[y] > '9') ||
+			(str[y] > 'Z' && str[y] < 'a' && str[y] != '_') ||
+			(str[y] > 'z')) {
+				str[y++] = '%';
+				str[y++] = hexchars[(unsigned char) s[x] >> 4];
+				str[y] = hexchars[(unsigned char) s[x] & 15];
+		}
+	}
+	return str;
+}
+QByteArray raw_url_decode(QByteArray &str)
+{
+	int len=0;
+	int maxlen=str.length();
+	int upperlen=maxlen-2;
+	QByteArray ret;
+	while(len<maxlen)
+	{
+		if(str[len]=='%' && len <upperlen && isxdigit(str[len+1])&& isxdigit(str[len+2]))
+		{
+			int c=str[len+1];
+			if(isupper(c)) c=tolower(c);
+			int val=(c >= '0' && c <= '9' ? c - '0' : c - 'a' + 10) * 16;
+			c=str[len+2];
+			if(isupper(c)) c=tolower(c);
+			val+= c >= '0' && c <= '9' ? c - '0' : c - 'a' + 10;
+			ret+=(char) val;
+			len+=2;
+		}
+		else
+		{
+			ret+=str[len];
+		}
+		++len;
+	}
+	return ret;
+}
+//
+//char *php_raw_url_encode(char const *s, int len, int *new_length)
+//{
+//	register int x, y;
+//	unsigned char *str;
+//
+//	str = (unsigned char *) safe_emalloc(3, len, 1);
+//	for (x = 0, y = 0; len--; x++, y++) {
+//		str[y] = (unsigned char) s[x];
+//#ifndef CHARSET_EBCDIC
+//		if ((str[y] < '0' && str[y] != '-' && str[y] != '.') ||
+//			(str[y] < 'A' && str[y] > '9') ||
+//			(str[y] > 'Z' && str[y] < 'a' && str[y] != '_') ||
+//			(str[y] > 'z')) {
+//				str[y++] = '%';
+//				str[y++] = hexchars[(unsigned char) s[x] >> 4];
+//				str[y] = hexchars[(unsigned char) s[x] & 15];
+//#else /*CHARSET_EBCDIC*/
+//		if (!isalnum(str[y]) && strchr("_-.", str[y]) != NULL) {
+//			str[y++] = '%';
+//			str[y++] = hexchars[os_toascii[(unsigned char) s[x]] >> 4];
+//			str[y] = hexchars[os_toascii[(unsigned char) s[x]] & 15];
+//#endif /*CHARSET_EBCDIC*/
+//		}
+//	}
+//	str[y] = '\0';
+//	if (new_length) {
+//		*new_length = y;
+//	}
+//	return ((char *) str);
+//}
+//
+//PHPAPI int php_raw_url_decode(char *str, int len)
+//{
+//	char *dest = str;
+//	char *data = str;
+//
+//	while (len--) {
+//		if (*data == '%' && len >= 2 && isxdigit((int) *(data + 1)) 
+//			&& isxdigit((int) *(data + 2))) {
+//#ifndef CHARSET_EBCDIC
+//				*dest = (char) php_htoi(data + 1);
+//#else
+//				*dest = os_toebcdic[(char) php_htoi(data + 1)];
+//#endif
+//				data += 2;
+//				len -= 2;
+//		} else {
+//			*dest = *data;
+//		}
+//		data++;
+//		dest++;
+//	}
+//	*dest = '\0';
+//	return dest - str;
+//}
+

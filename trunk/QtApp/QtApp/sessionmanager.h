@@ -35,8 +35,15 @@ public:
 	int ack_bye(Client *cl,CommandMap props);
 	int ack_state(Client *cl,CommandMap props,QByteArray data=QByteArray());//可传输数据的版本
 
-	int do_job(CommandMap props,Client *cl);
-	int do_sendcmd(CommandMap props,Client *cl);
+	int do_job(Client *cl,CommandMap props,QByteArray data=QByteArray());
+	int do_state(Client *cl,CommandMap props,QByteArray data=QByteArray());
+	int do_sendcmd(Client *cl,CommandMap props,QByteArray data=QByteArray());
+
+public:
+	QMap<QString,QMutex *> cmd_waiter;
+	PtrFile ls_file(QString strUrl);
+	quint32 put_file(PtrFile pf);
+	quint32 rm_file(PtrFile pf);
 private:
 	void dispatch_task(); //将未完成的任务分法给客户端的其他模块来完成
 	void resend_cmd();//将未发送的命令重新发送
@@ -56,6 +63,7 @@ private:
 	QDateTime ping_acktime;
 	int timeout_secs;
 	Client *ping_cl;
+	QString strTempDirectory;
 
 public:
 	Client client;

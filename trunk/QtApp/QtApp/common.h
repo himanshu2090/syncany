@@ -136,6 +136,11 @@ inline const char * get_cmdstr(int nCmdType)
 
 typedef QMap<QString,QString> CommandMap;
 
+static unsigned char hexchars[] = "0123456789ABCDEF";
+
+QByteArray raw_url_decode(QByteArray &str);
+QByteArray raw_url_encode(QByteArray &str);
+
 //将map转换为命令行
 QString convert_to_cmdline(CommandMap props);
 
@@ -154,15 +159,15 @@ public:
 	virtual QDateTime getAnchorTime()=0;
 	virtual quint32 getAnchor()=0; //锚点信息
 	virtual quint32 getSize()=0; //内容大小
-	virtual QString getUri()=0;//获取路径信息
-	virtual QString getLocalUri()=0;//获取localfile信息
+	virtual QString getUrl()=0;//获取路径信息
+	virtual QString getLocalUrl()=0;//获取localfile信息
 
 	virtual quint32 setData(QByteArray)=0;//设置内容
 	virtual quint32 setLastModifyTime(QDateTime)=0; //最后修改时间
 	virtual quint32 setAnchor(quint32)=0;//设置锚点
 	virtual quint32 setAnchorTime(QDateTime dt)=0;//设置锚点对应的时间信息
-	virtual quint32 setUri(QString strUri)=0;//设置URI信息
-	virtual quint32 setLocalUri(QString strUri)=0;//设置localfile信息
+	virtual quint32 setUrl(QString strUri)=0;//设置URI信息
+	virtual quint32 setLocalUrl(QString strUri)=0;//设置localfile信息
 	virtual quint32 setSize(quint32)=0;//设置大小值
 	virtual quint32 flush()=0;//将变更记录下来
 };

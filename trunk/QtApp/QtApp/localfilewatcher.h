@@ -25,6 +25,8 @@ public:
 
 signals:
 	void filesChanged(QStringList &strFiles);
+	void filesAdded(QStringList &strFiles);
+	void filesRemoved(QStringList &strFiles);
 private slots:
 	void heartbeat();
 };

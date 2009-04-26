@@ -3,10 +3,32 @@
 #include <exception>
 using namespace std;
 
+class MyApp:public QApplication
+{
+public: 
+
+	MyApp(int _argc, char **_argv): QApplication(_argc, _argv)
+	{ 
+
+	}
+	//bool notify(QObject *receiver, QEvent *e)
+	//{
+
+	//	qDebug( "Notify()!" );
+
+	//	return false;
+
+	//} 
+
+};
 int main(int argc, char *argv[])
 {
+	//QTextCodec *codec=QTextCodec::codecForName("GB2312");
+	//QTextCodec::setCodecForLocale(codec);
+	//QTextCodec::setCodecForTr(codec);
+	//QTextCodec::setCodecForCStrings(codec);
 	try{
-		QApplication a(argc, argv);
+		MyApp a(argc, argv);
 		QtApp w;
 		w.show();
 		return a.exec();

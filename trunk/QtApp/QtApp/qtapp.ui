@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
+    <width>668</width>
     <height>568</height>
    </rect>
   </property>
@@ -225,6 +225,32 @@
      <string>Browse</string>
     </property>
    </widget>
+  </widget>
+  <widget class="QPushButton" name="pushButton_Test_Put_Get" >
+   <property name="geometry" >
+    <rect>
+     <x>410</x>
+     <y>30</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>TestPutGet</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_3" >
+   <property name="geometry" >
+    <rect>
+     <x>600</x>
+     <y>20</y>
+     <width>41</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>do_ls</string>
+   </property>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11" />

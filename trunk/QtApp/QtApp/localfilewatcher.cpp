@@ -22,13 +22,13 @@ LocalFileWatcher::~LocalFileWatcher()
 
 void list_files(QFileInfo fi,QStringList &dirs)
 {
-	qDebug("try list_files(%s)",fi.absoluteFilePath().toStdString().c_str());
+	//qDebug("try list_files(%s)",fi.absoluteFilePath().toStdString().c_str());
     QFileInfoList fil=QDir(fi.absoluteFilePath()).entryInfoList();//QDir::NoDotAndDotDot);
     for(unsigned int i=0;i<fil.size();++i)
     {
 		if(fil[i].fileName()== "." || fil[i].fileName()== "..") //排除"." ".."
 		{
-			qDebug("skip %s",fil[i].absoluteFilePath().toStdString().c_str());
+			//qDebug("skip %s",fil[i].absoluteFilePath().toStdString().c_str());
 			continue;
 		}
 		if(fil[i].isFile())
@@ -42,6 +42,8 @@ void LocalFileWatcher::heartbeat()
 {
     QStringList dirs_all;
 	QStringList dirs_update;
+	QStringList dirs_add;
+	QStringList dirs_remove;
     list_files(QFileInfo(strSyncDirectory),dirs_all);
 	ptrfiles=SyncBaseFile::getAllFiles();
 	for(quint32 i=0;i<dirs_all.size();++i)
@@ -51,17 +53,18 @@ void LocalFileWatcher::heartbeat()
 		QFileInfo qfi(dirs_all[i]);
 		if(it==ptrfiles.end())
 		{
-			dirs_update.append(strUri);
+			dirs_add.append(strUri);
 			PtrFile pf=new SyncBaseFile();
 			pf->setLastModifyTime(qfi.lastModified());
 			pf->setSize(qfi.size());
-			pf->setLocalUri(qfi.absoluteFilePath());
-			pf->setUri(strUri);
+			pf->setLocalUrl(qfi.absoluteFilePath());
+			pf->setUrl(strUri);
 			pf->flush();
 		}
 		else
 		{
 			PtrFile pf=it.value();
+			ptrfiles.remove(it.key());
 			//qDebug(pf->getLastModifyTime().toString().toStdString().c_str());
 			//qDebug(qfi.lastModified().toString().toStdString().c_str());
 			if(pf->getLastModifyTime().toString()!=qfi.lastModified().toString())
@@ -69,13 +72,23 @@ void LocalFileWatcher::heartbeat()
 				dirs_update.append(strUri);
 				pf->setLastModifyTime(qfi.lastModified());
 				pf->setSize(qfi.size());
-				pf->setLocalUri(qfi.absoluteFilePath());
+				pf->setLocalUrl(qfi.absoluteFilePath());
 				pf->flush();
 			}
 		}
 	}
+	QList<QString> ks=ptrfiles.keys();
+	for(int i=0;i<ks.size();++i)
+	{
+		PtrFile pf=ptrfiles[ks[i]];
+		dirs_remove.append(ks[i]);
+	}
 	if(dirs_update.size()>0)
 		emit filesChanged(dirs_update);
+	if(dirs_add.size()>0)
+		emit filesAdded(dirs_add);
+	if(dirs_remove.size()>0)
+		emit filesRemoved(dirs_remove);
 }
 
 
@@ -92,8 +105,11 @@ QString LocalFileWatcher::local2uri(QString strLocal)
 	{
 		qDebug("错误的本地目录：%s",strTemp.toStdString().c_str());
 	}
-	if(!strTemp.startsWith("/"))
-		return "/"+strTemp;
+	
+	if(!strTemp.startsWith("/home/wujunping/testfold/"))
+		return "/home/wujunping/testfold/"+strTemp;
+	//if(!strTemp.startsWith("/"))
+	//	return "/"+strTemp;
 	return strTemp;
 }
 
