@@ -25,6 +25,7 @@ SessionManager::SessionManager(QObject *parent)
 		strTemp=synconf->getstr("timeout_secs","5");
 		timeout_secs=strTemp.toInt();
 		synconf->setstr("timeout_secs",QString::number(timeout_secs),true);
+		strTempDirectory=synconf->getstr("temp_path","c:/temp/");
 
 		//ÈÕÖ¾ÍøÂçÁ¬½ÓµÄÐÅÏ¢
 		connect(&client,SIGNAL(sigLogger(QString)),parent,SLOT(log(QString)));
@@ -95,6 +96,7 @@ void SessionManager::ConnectHost()
 void SessionManager::DisconnectHost()
 {
 	bAutoConnectHost=false;
+	client.sendData("bye "+generate_cmdid().toLocal8Bit()+"\n");
 	client.DisconnectHost();
 	if(ping_cl==&client)
 		ping_cl=null;
@@ -106,6 +108,7 @@ void SessionManager::heartbeat()
 	{
 		ConnectHost();
 	}
+#if 0
 	//ÅÐ¶Ïping°üÊÇ·ñ³¬Ê±
 	QDateTime qtm=QDateTime::currentDateTime();
 	if(ping_acktime.addSecs(timeout_secs+10) < qtm && bAutoConnectHost)
@@ -125,6 +128,7 @@ void SessionManager::heartbeat()
 		if(ping_cl && ping_cl->getSocket()->state()==QTcpSocket::ConnectedState)
 			say_ping(ping_cl);
 	}
+#endif
 	if(ping_cl && ping_cl->getSocket()->state()==QTcpSocket::ConnectedState)
 	{
 		//´¦ÀíÎ´·¢ËÍµÄÃüÁî
@@ -166,12 +170,21 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 	
 	emit sigLogger(str);
 
+
 	//³ýÁËÏìÓ¦state£¬ÆäÓàÃüÁî¶¼Ó¦¸ÃÏÈÈë¶ÓÁÐ£¬ºóÐø´¦ÀíÊ±¶ÔÓÚ¸´ÔÓµÄÈÎÎñ£¬¿¼ÂÇ¿ªÏß³ÌÈ¥´¦Àí
 	int nCmdType=get_cmdtype(strCmdStr.toLocal8Bit().data());
 	if(nCmdType == CMD_UNKNOWN)
 	{
 		emit sigLogger(QString::fromLocal8Bit("´íÎó£¡Î´ÖªÃüÁî£º")+strCmdLine);
 		return ;
+	}
+	if(!buffer.isNull() && buffer.length()>0)
+	{
+		QString strTempFile=strTempDirectory+((nCmdType != CMD_STATE )?"/in":"/out")+props["1"]+".tmp";
+		QFile qf(strTempDirectory);
+		qf.open(QIODevice::Truncate);
+		qf.write(buffer);
+		qf.close();
 	}
 	if(nCmdType != CMD_STATE )
 	{
@@ -191,7 +204,7 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 			//ÐÂÃüÁî£¬ÏÈÌí¼Óµ½Êý¾Ý¿âÀï£¬È»ºóÔÙ×ö±¾´ÎÈÎÎñ·Ö·¢
 			syncdb->cmd_put(props["1"],strCmdLine,QUEUE_IN);
 		}
-		do_job(props,cl);
+		do_job(cl,props,buffer);
 	}
 	else
 	{
@@ -210,6 +223,8 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 			if(old_props.size()!=0)
 			{
 				syncdb->cmd_tag(props["1"],TAG_COMPLETE,strCmdLine,QUEUE_OUT);
+				//¸ù¾ÝÏìÓ¦µÄÃüÁîÀ´´¦Àí
+				do_state(cl,props,buffer);
 			}
 			else
 				emit sigLogger(QString::fromLocal8Bit("ÊÕµ½´íÎóµÄÃüÁîÏìÓ¦A£º")+strCmdLine);
@@ -303,7 +318,7 @@ void SessionManager::dispatch_task() //½«Î´Íê³ÉµÄÈÎÎñ·Ö·¨¸ø¿Í»§¶ËµÄÆäËûÄ£¿éÀ´Íê³
 			syncdb->cmd_tag(props["1"],TAG_ABANDON,"",QUEUE_IN);
 			continue;
 		}
-		do_job(props,ping_cl);//·Ö·¢Ò»¸ö´ýÍê³ÉµÄÈÎÎñ
+		do_job(ping_cl,props);//·Ö·¢Ò»¸ö´ýÍê³ÉµÄÈÎÎñ
 	}
 }
 
@@ -322,12 +337,12 @@ void SessionManager::resend_cmd()//½«Î´·¢ËÍµÄÃüÁîÖØÐÂ·¢ËÍ
 			syncdb->cmd_tag(props["1"],TAG_ABANDON,"",QUEUE_OUT);
 			continue;
 		}
-		do_sendcmd(props,ping_cl);//·Ö·¢Ò»¸ö´ýÍê³ÉµÄÈÎÎñ
+		do_sendcmd(ping_cl,props);//·Ö·¢Ò»¸ö´ýÍê³ÉµÄÈÎÎñ
 	}
 }
 
 //´¦Àí½øÈëµÄÈÎÎñ
-int SessionManager::do_job(CommandMap props,Client *cl)
+int SessionManager::do_job(Client *cl,CommandMap props,QByteArray data)
 {
 	QMutexLocker locker(&m_locker);
 
@@ -379,11 +394,67 @@ int SessionManager::do_job(CommandMap props,Client *cl)
 }
 
 //´¦ÀíÍâ·¢µÄÃüÁî
-int SessionManager::do_sendcmd(CommandMap props,Client *cl)
+int SessionManager::do_sendcmd(Client *cl,CommandMap props,QByteArray data)
 {
 	syncdb->cmd_tag(props["1"],TAG_SENDING,"",QUEUE_OUT);
 	QString strCmdLine=convert_to_cmdline(props)+"\n";
 	return cl->sendData(strCmdLine);
+}
+
+int SessionManager::do_state(Client *cl,CommandMap props,QByteArray data)
+{
+	return 0;
+}
+
+//¸ù¾ÝÔ¶³ÌµØÖ·£¬»ñÈ¡ÎÄ¼þÐÅÏ¢
+PtrFile SessionManager::ls_file(QString strUrl)
+{
+	return PtrFile();
+}
+quint32 SessionManager::put_file(PtrFile pf)
+{
+
+	if(ping_cl == null)
+		return -1;
+
+	QByteArray buf=pf->getData();
+
+	CommandMap props;
+	props["url"]=pf->getUrl();
+	props["size"]=QString::number(buf.length());
+	props["0"]=get_cmdstr(CMD_PUT);
+	props["1"]=generate_cmdid();
+
+	QString strCmdLine=convert_to_cmdline(props)+"\n";
+	syncdb->cmd_put(props["1"],strCmdLine,QUEUE_OUT);
+	
+	int ret=ping_cl->sendData(strCmdLine);
+	if(ret==ERR_NONE)
+		syncdb->cmd_tag(props["1"],TAG_SENDING,"",QUEUE_OUT);
+	return ret;
+
+}
+
+quint32 SessionManager::rm_file(PtrFile pf)
+{
+	if(ping_cl == null)
+		return -1;
+
+
+	CommandMap props;
+	props["url"]=pf->getUrl();
+	props["0"]=get_cmdstr(CMD_RM);
+	props["1"]=generate_cmdid();
+
+	QString strCmdLine=convert_to_cmdline(props)+"\n";
+	syncdb->cmd_put(props["1"],strCmdLine,QUEUE_OUT);
+
+	int ret=ping_cl->sendData(strCmdLine);
+	if(ret==ERR_NONE)
+		syncdb->cmd_tag(props["1"],TAG_SENDING,"",QUEUE_OUT);
+	return ret;
+
+
 }
 
 

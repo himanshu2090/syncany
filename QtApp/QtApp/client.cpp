@@ -71,7 +71,7 @@ void Client::stateChanged ( QTcpSocket::SocketState socketState )
 void Client::readData()
 {
 	QMutexLocker locker(&m_locker_in);
-	buffer+=m_sock->readAll();
+	buffer.append(m_sock->readAll());
 	if(bWaitingCommand)
 	{
 		while(true)
@@ -127,7 +127,7 @@ void Client::readData()
 			if(props.find("size") != props.end())
 			{
 
-                                props["size"].toInt(&ok);
+                datalen=props["size"].toInt(&ok);
 
 				if(!ok)
 				{
@@ -153,6 +153,10 @@ void Client::readData()
 
 		emit sigRecv(this,strCmdID.toInt(),strCmdStr,strCmdLine,props,data);
 		bWaitingCommand=true;
+	}
+	else
+	{
+		emit sigLogger(QDateTime::currentDateTime().toString()+":"+QString::number(buffer.length()));
 	}
 	//else 继续等待下一批数据到来
 }

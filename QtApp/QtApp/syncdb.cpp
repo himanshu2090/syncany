@@ -63,20 +63,20 @@ CONSTRAINT [sqlite_autoindex_sqout_1] PRIMARY KEY ([cmd_id]));
 文件同步表：
 filename	本地磁盘文件名（带全路径）
 filesize	本地文件大小
-uri_local	无相对URI表示
+url_local	无相对URI表示
 anchor 锚点（服务器产生）
 anchor_time 锚点对应的最后修改时间，本地存储，在更新锚点时更新
 modify_time 最后修改时间
 
 CREATE TABLE [sync_files] (
 [fid] AUTOINC, 
-[uri_local] VARCHAR NOT NULL, 
+[url_local] VARCHAR NOT NULL, 
 [filename] VARCHAR , 
 [filesize] INT , 
 [anchor] INT, 
 [anchor_time] DATETIME, 
 [modify_time] DATETIME,
-CONSTRAINT [sqlite_autoindex_sync_files_uri_local] PRIMARY KEY ([uri_local]));
+CONSTRAINT [sqlite_autoindex_sync_files_url_local] PRIMARY KEY ([url_local]));
 */
 
 void SyncDB::createTable() //在构造函数里调用，未加锁，因为在创建单体实例前已经加锁

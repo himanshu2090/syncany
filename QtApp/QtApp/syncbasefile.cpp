@@ -10,13 +10,13 @@ modify_time 最后修改时间
 
 CREATE TABLE [sync_files] (
 [fid] AUTOINC, 
-[uri] VARCHAR NOT NULL, 
+[url] VARCHAR NOT NULL, 
 [filename] VARCHAR , 
 [filesize] INT , 
 [anchor] INT, 
 [anchor_time] DATETIME, 
 [modify_time] DATETIME,
-CONSTRAINT [sqlite_autoindex_sync_files_uri] PRIMARY KEY ([uri]));
+CONSTRAINT [sqlite_autoindex_sync_files_uri] PRIMARY KEY ([url]));
 
 
 */
@@ -27,7 +27,7 @@ SyncBaseFile::SyncBaseFile(QObject *parent)
 	pszTableName=strSyncTableName[SYNC_FILES];
 
 	datasize=-1;
-	uri="";
+	url="";
 	filename="";
 	anchor=0;
 }
@@ -49,13 +49,13 @@ void SyncBaseFile::createTable()
 		strSql+="CREATE TABLE [";
 		strSql+=strTableName+"] (\n"
 			"[fid] AUTOINC, \n"
-			"[uri] VARCHAR NOT NULL, \n"
+			"[url] VARCHAR NOT NULL, \n"
 			"[filename] VARCHAR ,\n" 
 			"[filesize] INT , \n"
 			"[anchor] INT, \n"
 			"[anchor_time] DATETIME, \n"
 			"[modify_time] DATETIME,\n"
-			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_uri] PRIMARY KEY ([uri]));\n";
+			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_uri] PRIMARY KEY ([url]));\n";
 		syncdb->execSql(strSql);
 	}
 }
@@ -112,40 +112,50 @@ quint32 SyncBaseFile::setSize(quint32 sz) //设置内容大小
 
 QByteArray SyncBaseFile::getData()//获取内容
 {
-	//TODO从文件读入
-	return QByteArray();
+	if(filename=="")
+		return QByteArray();
+	QFile qf(filename);
+	qf.open(QIODevice::ReadOnly);
+	QByteArray buf=qf.readAll();
+	qf.close();
+	return buf;
 }
-quint32 SyncBaseFile::setData(QByteArray)//设置内容
+quint32 SyncBaseFile::setData(QByteArray buf)//设置内容
 {
-	//TODO写入到文件
-	return 0;
+	if(filename=="")
+		return 0;
+	QFile qf(filename);
+	qf.open(QIODevice::Truncate);
+	quint32 ret=qf.write(buf);
+	qf.close();
+	return ret;
 }
-QString SyncBaseFile::getUri()//获取路径信息
+QString SyncBaseFile::getUrl()//获取路径信息
 {
-	return uri;
+	return url;
 }
 
-quint32 SyncBaseFile::setUri(QString strUri)
+quint32 SyncBaseFile::setUrl(QString strUrl)
 {
-	uri=strUri;
+	url=strUrl;
 	return 0;
 }
-QString SyncBaseFile::getLocalUri()//获取localfile信息
+QString SyncBaseFile::getLocalUrl()//获取localfile信息
 {
 	return filename;
 }
 
-quint32 SyncBaseFile::setLocalUri(QString strUri)//设置localfile信息
+quint32 SyncBaseFile::setLocalUrl(QString strUrl)//设置localfile信息
 {
-	filename=strUri;
+	filename=strUrl;
 	return 0;
 }
 
 quint32 SyncBaseFile::flush()
 {
-	if(!SyncBaseFile::getFileByUri(uri).isNull())
+	if(!SyncBaseFile::getFileByUrl(url).isNull())
 	{
-		QString strSql="update sync_files set uri='"+uri+"'";
+		QString strSql="update sync_files set url='"+url+"'";
 		if(filename!="")
 			strSql+=",filename='"+filename+"',filesize="+QString::number(datasize);
 		if(anchor>0)
@@ -154,13 +164,13 @@ quint32 SyncBaseFile::flush()
 			strSql+=",anchor_time='"+anchortime.toString(Qt::ISODate)+"'";
 		if(lastmodify.isValid())
 			strSql+=",modify_time='"+lastmodify.toString(Qt::ISODate)+"'";
-		strSql+=" where uri='"+uri+"'";
+		strSql+=" where url='"+url+"'";
 		return syncdb->execSql(strSql);
 	}
 	else
 	{
-		QString strField="(uri";
-		QString strValue="('"+uri+"'";
+		QString strField="(url";
+		QString strValue="('"+url+"'";
 		if(filename!="")
 		{
 			strField+=",filename,filesize";
@@ -188,15 +198,15 @@ quint32 SyncBaseFile::flush()
 	}
 }
 
-PtrFile SyncBaseFile::getFileByUri(QString strUri)
+PtrFile SyncBaseFile::getFileByUrl(QString strUrl)
 {
-	QString strSql="select * from sync_files where uri='"+strUri+"' limit 1";
+	QString strSql="select * from sync_files where url='"+strUrl+"' limit 1";
 	CommandMap rs=SyncDB::instance()->singleQuerySql(strSql);
 	if(rs.size()==0)
 		return PtrFile();
 	PtrFile pf=new SyncBaseFile(null);
-	pf->setUri(strUri);
-	pf->setLocalUri(rs["filename"]);
+	pf->setUrl(strUrl);
+	pf->setLocalUrl(rs["filename"]);
 	quint32 i=rs["anchor"].toInt();
 	if(i>0)
 		pf->setAnchor(i);
@@ -217,8 +227,8 @@ PtrFile SyncBaseFile::getFileByFileName(QString strFilename)
 	if(rs.size()==0)
 		return PtrFile();
 	PtrFile pf=new SyncBaseFile(null);
-	pf->setUri(strFilename);
-	pf->setLocalUri(rs["filename"]);
+	pf->setUrl(strFilename);
+	pf->setLocalUrl(rs["filename"]);
 	quint32 i=rs["anchor"].toInt();
 	if(i>0)
 		pf->setAnchor(i);
@@ -245,8 +255,8 @@ QMap<QString,PtrFile> SyncBaseFile::getAllFiles()
 			props[rs.fieldName(i)]=rs.fieldValue(i);
 		}
 		PtrFile pf=new SyncBaseFile(null);
-		pf->setUri(props["uri"]);
-		pf->setLocalUri(props["filename"]);
+		pf->setUrl(props["url"]);
+		pf->setLocalUrl(props["filename"]);
 		quint32 i=props["anchor"].toInt();
 		if(i>0)
 			pf->setAnchor(i);
@@ -258,7 +268,7 @@ QMap<QString,PtrFile> SyncBaseFile::getAllFiles()
 		if(props["modify_time"]!="")
 			pf->setLastModifyTime(QDateTime::fromString(props["modify_time"],Qt::ISODate));
 
-		ret[props["uri"]]=pf;
+		ret[props["url"]]=pf;
 		rs.nextRow();
 	}
 	return ret;

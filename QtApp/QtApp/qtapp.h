@@ -24,7 +24,10 @@ private:
 	Synconf *synconf;
 	SyncDB *syncdb;
 
+
 private slots:
+	void on_pushButton_3_clicked();
+	void on_pushButton_Test_Put_Get_clicked();
 	void on_pushButton_2_clicked();
 	void on_btnDisconnect_clicked();
 	void on_btnConnect_clicked();
@@ -36,6 +39,8 @@ private slots:
 	void logout(QString str);
 
 	void local_files_changed(QStringList &strFiles);
+	void local_files_added(QStringList &strFiles);
+	void local_files_removed(QStringList &strFiles);
 };
 
 #endif // QTAPP_H
