@@ -409,6 +409,23 @@ int SessionManager::do_state(Client *cl,CommandMap props,QByteArray data)
 //根据远程地址，获取文件信息
 PtrFile SessionManager::ls_file(QString strUrl)
 {
+	if(ping_cl == null)
+		return -1;
+
+
+	CommandMap props;
+	props["url"]=pf->getUrl();
+	props["0"]=get_cmdstr(CMD_LS);
+	props["1"]=generate_cmdid();
+
+	QString strCmdLine=convert_to_cmdline(props)+"\n";
+	syncdb->cmd_put(props["1"],strCmdLine,QUEUE_OUT);
+
+	int ret=ping_cl->sendData(strCmdLine);
+	if(ret==ERR_NONE)
+		syncdb->cmd_tag(props["1"],TAG_SENDING,"",QUEUE_OUT);
+	//等待返回
+	//TODO:
 	return PtrFile();
 }
 quint32 SessionManager::put_file(PtrFile pf)
