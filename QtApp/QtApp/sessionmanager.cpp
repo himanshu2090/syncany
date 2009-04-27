@@ -1,4 +1,5 @@
 #include "sessionmanager.h"
+#include "syncbasefile.h"
 
 SessionManager::SessionManager(QObject *parent)
 	: QObject(parent)
@@ -219,6 +220,11 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 		}
 		if(syncdb->cmd_exist(props["1"],QUEUE_OUT))
 		{
+			if(cmd_waiter.find(props["1"])!=cmd_waiter.end())
+			{
+				QWaitCondition *qwc=cmd_waiter[props["1"]];
+				qwc->wakeAll();
+			}
 			CommandMap old_props=syncdb->cmd_get(props["1"],QUEUE_OUT);
 			if(old_props.size()!=0)
 			{
@@ -410,9 +416,9 @@ int SessionManager::do_state(Client *cl,CommandMap props,QByteArray data)
 PtrFile SessionManager::ls_file(QString strUrl)
 {
 	if(ping_cl == null)
-		return -1;
+		return PtrFile();
 
-
+	PtrFile pf=new SyncBaseFile();
 	CommandMap props;
 	props["url"]=pf->getUrl();
 	props["0"]=get_cmdstr(CMD_LS);
@@ -421,11 +427,18 @@ PtrFile SessionManager::ls_file(QString strUrl)
 	QString strCmdLine=convert_to_cmdline(props)+"\n";
 	syncdb->cmd_put(props["1"],strCmdLine,QUEUE_OUT);
 
+	QWaitCondition qwc;
+	QMutex mtx;
+	mtx.lock();
 	int ret=ping_cl->sendData(strCmdLine);
+	cmd_waiter[props["1"]]=&qwc;
+	qwc.wait(&mtx);//会不会锁死啊。。。。
+
 	if(ret==ERR_NONE)
 		syncdb->cmd_tag(props["1"],TAG_SENDING,"",QUEUE_OUT);
 	//等待返回
 	//TODO:
+
 	return PtrFile();
 }
 quint32 SessionManager::put_file(PtrFile pf)

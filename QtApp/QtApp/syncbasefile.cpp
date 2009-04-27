@@ -252,7 +252,7 @@ QMap<QString,PtrFile> SyncBaseFile::getAllFiles()
 		CommandMap props;
 		for(int i=0;i<rs.numFields();++i)
 		{
-			props[rs.fieldName(i)]=rs.fieldValue(i);
+			props[rs.fieldName(i)]=QString::fromLocal8Bit(rs.fieldValue(i));
 		}
 		PtrFile pf=new SyncBaseFile(null);
 		pf->setUrl(props["url"]);
