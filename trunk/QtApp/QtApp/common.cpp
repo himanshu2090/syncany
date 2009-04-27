@@ -25,7 +25,8 @@ QString convert_to_cmdline(CommandMap props)
 		if(keys[i].length()==0 || props[keys[i]].length()==0) continue;
 		strCmdLine+=keys[i];
 		strCmdLine+="=";
-		strCmdLine+=props[keys[i]];
+		QByteArray buf=raw_url_encode(props[keys[i]].toLocal8Bit());
+		strCmdLine+=buf;
 		strCmdLine+=" ";
 	}
 	return strCmdLine;
@@ -44,13 +45,15 @@ CommandMap convert_from_cmdline(QString strCmdLine)
 		case 1:
 			if(kvList[0].length()>0)
 			{
-				props[QString::number(id++)]=kvList[0];
+				QByteArray buf=raw_url_decode(kvList[0].toLocal8Bit());
+				props[QString::number(id++)]=buf;
 			}
 			break;
 		case 2:
 			if(kvList[0].length()>0 && kvList[1].length()>0)
 			{
-				props[kvList[0]]=kvList[1];
+				QByteArray buf=raw_url_decode(kvList[1].toLocal8Bit());
+				props[kvList[0]]=buf;
 			}
 			break;
 		default://其他情况丢弃

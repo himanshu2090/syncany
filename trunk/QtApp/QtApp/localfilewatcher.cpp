@@ -10,7 +10,7 @@ LocalFileWatcher::LocalFileWatcher(QObject *parent)
 	strSyncDirectory=synconf->getstr("sync_dir","C:/download/");
 	timer=new QTimer(this);
 	connect(timer.data(), SIGNAL(timeout()), this, SLOT(heartbeat()));
-	timer->start(1000);
+	timer->start(10000);
 	SyncBaseFile::createTable();
 	ptrfiles=SyncBaseFile::getAllFiles();
 }
