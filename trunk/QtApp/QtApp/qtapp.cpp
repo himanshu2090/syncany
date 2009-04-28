@@ -61,8 +61,6 @@ void QtApp::on_btnClear_clicked()
 void QtApp::log(QString str)
 {
 	QString so="LOG:"+str.trimmed();
-	qDebug(so.toLocal8Bit());
-	qDebug("\n");
 	ui.textLogger->append(so);
 }
 
@@ -101,13 +99,13 @@ void QtApp::local_files_changed(QStringList & strFiles)
 	{
 		str.append(strFiles[i]);
 		str.append("\n");
-		PtrFile rpf=sm->ls_file(strFiles[i]);//根据URL
+		QList<PtrFile> rpf=sm->ls_file(strFiles[i]);//根据URL
 		PtrFile pf=SyncBaseFile::getFileByUrl(strFiles[i]);
-		if(rpf->getAnchor() < pf->getAnchor())
+		if(rpf[0]->getAnchor() < pf->getAnchor())
 			sm->put_file(pf);
 		else
 		{
-			QString strInfo=rpf->getUrl()+"出现文件冲突！本地锚点"+QString::number(pf->getAnchor())+"与服务器锚点"+QString::number(rpf->getAnchor())+"不一致!";
+			QString strInfo=rpf[0]->getUrl()+"出现文件冲突！本地锚点"+QString::number(pf->getAnchor())+"与服务器锚点"+QString::number(rpf[0]->getAnchor())+"不一致!";
 			QMessageBox(QMessageBox::NoIcon,"文件冲突！",strInfo).exec();
 		}
 	}
@@ -178,4 +176,6 @@ void QtApp::on_pushButton_3_clicked()
 	QByteArray ss=raw_url_decode(s);
 	qDebug(ss);
 	qDebug("中文");
+
+	sm->ls_file("/home/wujunping/testfold/");
 }

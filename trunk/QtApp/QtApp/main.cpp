@@ -23,10 +23,10 @@ public:
 };
 int main(int argc, char *argv[])
 {
-	//QTextCodec *codec=QTextCodec::codecForName("GB2312");
-	//QTextCodec::setCodecForLocale(codec);
-	//QTextCodec::setCodecForTr(codec);
-	//QTextCodec::setCodecForCStrings(codec);
+	QTextCodec *codec=QTextCodec::codecForName("GB18030");
+	QTextCodec::setCodecForLocale(codec);
+	QTextCodec::setCodecForTr(codec);
+	QTextCodec::setCodecForCStrings(codec);
 	try{
 		MyApp a(argc, argv);
 		QtApp w;

@@ -3,7 +3,7 @@
 文件同步表：
 filename	本地磁盘文件名（带全路径）
 filesize	本地文件大小
-uri_local	无相对URI表示
+url	相对URL表示
 anchor 锚点（服务器产生）
 anchor_time 锚点对应的最后修改时间，本地存储，在更新锚点时更新
 modify_time 最后修改时间
@@ -272,5 +272,10 @@ QMap<QString,PtrFile> SyncBaseFile::getAllFiles()
 		rs.nextRow();
 	}
 	return ret;
+}
+
+quint32 SyncBaseFile::getType()
+{
+	return TYPE_FILE;
 }
 
