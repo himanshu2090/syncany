@@ -20,19 +20,21 @@ public:
 	virtual QString getUrl();//获取路径信息
 	virtual QString getLocalUrl();//获取localfile信息
 
+	virtual quint32 getType();//获取类型（文件，目录或者。。。？）
+
 	virtual quint32 setData(QByteArray);//设置内容
 	virtual quint32 setLastModifyTime(QDateTime); //最后修改时间
 	virtual quint32 setAnchor(quint32);//设置锚点
 	virtual quint32 setAnchorTime(QDateTime dt);//设置锚点对应的时间信息
-	virtual quint32 setUrl(QString strUri);//设置URI信息
-	virtual quint32 setLocalUrl(QString strUri);//设置localfile信息
+	virtual quint32 setUrl(QString strUrl);//设置URI信息
+	virtual quint32 setLocalUrl(QString strUrl);//设置localfile信息
 	virtual quint32 setSize(quint32);//设置大小值
 
 	virtual quint32 flush();//将变更记录下来
 
 public :
 	static void createTable();
-	static PtrFile getFileByUrl(QString strUri);
+	static PtrFile getFileByUrl(QString strUrl);
 	static PtrFile getFileByFileName(QString strFilename);
 	static QMap<QString,PtrFile> getAllFiles(); //获取数据库里的全部数据
 private:

@@ -24,6 +24,7 @@ enum ERROR_CODE_LIST
 	ERR_UNKNOWN,
 	ERR_NETWORK_CONNECT_FAIL,
 	ERR_NETWORK_SEND_FAIL,
+	ERR_NOT_SUPPORT,
 };
 /*
 code 	 含义 	使用于
@@ -148,6 +149,7 @@ QString convert_to_cmdline(CommandMap props);
 CommandMap convert_from_cmdline(QString strCmdLine);
 
 //接口类
+enum FILE_TYPE_LIST { TYPE_FILE,TYPE_FOLDER};
 
 class IFile:public QObject
 {
@@ -162,12 +164,14 @@ public:
 	virtual QString getUrl()=0;//获取路径信息
 	virtual QString getLocalUrl()=0;//获取localfile信息
 
+	virtual quint32 getType()=0;//获取类型（文件，目录或者。。。？）
+
 	virtual quint32 setData(QByteArray)=0;//设置内容
 	virtual quint32 setLastModifyTime(QDateTime)=0; //最后修改时间
 	virtual quint32 setAnchor(quint32)=0;//设置锚点
 	virtual quint32 setAnchorTime(QDateTime dt)=0;//设置锚点对应的时间信息
-	virtual quint32 setUrl(QString strUri)=0;//设置URI信息
-	virtual quint32 setLocalUrl(QString strUri)=0;//设置localfile信息
+	virtual quint32 setUrl(QString strUrl)=0;//设置URI信息
+	virtual quint32 setLocalUrl(QString strUrl)=0;//设置localfile信息
 	virtual quint32 setSize(quint32)=0;//设置大小值
 	virtual quint32 flush()=0;//将变更记录下来
 };
@@ -176,21 +180,20 @@ typedef QPointer<IFile> PtrFile;
 
 class IFolder;
 typedef QPointer<IFolder> PtrFolder;
-class IFolder:public QObject
+class IFolder:public IFile
 {
 public:
-	IFolder(QObject *parent=null):QObject(parent){}
-	virtual QMap<QString,PtrFile> do_ls(QString strUri)=0;
-	virtual PtrFolder do_cd(QString strUri)=0;
-	virtual PtrFolder do_mkdir(QString strUri,bool hasFilename)=0;
-	virtual quint32 do_rm(QString strUri)=0;
+	IFolder(QObject *parent=null):IFile(parent){}
+	virtual quint32 insert(IFile *subfile)=0;
+	virtual quint32 remove(IFile *subfile)=0;
+	virtual QList<PtrFile> getSubFiles()=0;
 };
 
 class IDevice:public QObject
 {
 public:
 	IDevice(QObject *parent=null):QObject(parent){}
-	virtual PtrFolder getFolder(QString strUri)=0;
+	virtual PtrFolder getFolder(QString strUrl)=0;
 signals:
 	void alert(QString strFile);
 };

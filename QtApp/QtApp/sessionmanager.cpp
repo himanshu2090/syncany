@@ -109,7 +109,7 @@ void SessionManager::heartbeat()
 	{
 		ConnectHost();
 	}
-#if 0
+#if 1
 	//判断ping包是否超时
 	QDateTime qtm=QDateTime::currentDateTime();
 	if(ping_acktime.addSecs(timeout_secs+10) < qtm && bAutoConnectHost)
@@ -181,9 +181,11 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 	}
 	if(!buffer.isNull() && buffer.length()>0)
 	{
-		QString strTempFile=strTempDirectory+((nCmdType != CMD_STATE )?"/in":"/out")+props["1"]+".tmp";
-		QFile qf(strTempDirectory);
-		qf.open(QIODevice::Truncate);
+		QString strTempFile=strTempDirectory+((nCmdType != CMD_STATE )?"/in/":"/out/");
+		QDir().mkpath(strTempFile);
+		strTempFile+=props["1"]+".tmp";
+		QFile qf(strTempFile);
+		qf.open(QIODevice::WriteOnly|QIODevice::Truncate);
 		qf.write(buffer);
 		qf.close();
 	}
@@ -212,6 +214,10 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 		//收到state的处理
 		//从发送队列里找该命令，如果找不到，或者命令已经完成，则丢弃，但是记录日志，否则修改命令为完成
 		//如果是PING命令的响应，则不入命令队列，所以应该在成员变量里记录和比较
+		if(cmd_waiter.contains(props["1"]))
+		{
+			cmd_waiter.removeOne(props["1"]);
+		}
 		if(props["1"].toInt()==ping_cmdid)
 		{
 			ping_acktime=QDateTime::currentDateTime();
@@ -220,11 +226,6 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 		}
 		if(syncdb->cmd_exist(props["1"],QUEUE_OUT))
 		{
-			if(cmd_waiter.find(props["1"])!=cmd_waiter.end())
-			{
-				QWaitCondition *qwc=cmd_waiter[props["1"]];
-				qwc->wakeAll();
-			}
 			CommandMap old_props=syncdb->cmd_get(props["1"],QUEUE_OUT);
 			if(old_props.size()!=0)
 			{
@@ -248,6 +249,17 @@ int SessionManager::say_hello(Client *cl)
 	props["syncany_client"]=synconf->getinfo("client_version");
 	props["protocol"]=synconf->getinfo("protocol_version");
 	props["platform"]=synconf->getinfo("os_version");
+
+	QString strSessionID=synconf->getstr("session_id");
+	if(strSessionID!="")
+		props["sessionid"]=strSessionID;
+	else
+	{
+		props["user"]=synconf->getstr("user_id");
+		props["pwd"]=synconf->getstr("user_password");
+	}
+	props["devuid"]=synconf->getstr("device_id");
+
 	props["0"]=get_cmdstr(CMD_HELLO);
 	props["1"]=generate_cmdid();
 
@@ -269,7 +281,17 @@ int SessionManager::say_ping(Client *cl)
 	strCmdLine+=strCmdID;
 	strCmdLine+="\n";
 	ping_cmdid=strCmdID.toInt();
-	return cl->sendData(strCmdLine);
+
+	cmd_waiter.append(strCmdID);
+	int ret=ping_cl->sendData(strCmdLine);
+	while(true)
+	{
+		ping_cl->getSocket()->waitForReadyRead();
+		if(!cmd_waiter.contains(strCmdID))
+			break;
+	}
+
+	return ret;
 }
 
 int SessionManager::ack_state(Client *cl,CommandMap props,QByteArray data)
@@ -413,33 +435,37 @@ int SessionManager::do_state(Client *cl,CommandMap props,QByteArray data)
 }
 
 //根据远程地址，获取文件信息
-PtrFile SessionManager::ls_file(QString strUrl)
+QList<PtrFile> SessionManager::ls_file(QString strUrl)
 {
 	if(ping_cl == null)
-		return PtrFile();
+		return QList<PtrFile>();
 
-	PtrFile pf=new SyncBaseFile();
 	CommandMap props;
-	props["url"]=pf->getUrl();
+	props["url"]=strUrl;
 	props["0"]=get_cmdstr(CMD_LS);
-	props["1"]=generate_cmdid();
+	QString strCmdID=generate_cmdid();
+	props["1"]=strCmdID;
 
 	QString strCmdLine=convert_to_cmdline(props)+"\n";
-	syncdb->cmd_put(props["1"],strCmdLine,QUEUE_OUT);
+	syncdb->cmd_put(strCmdID,strCmdLine,QUEUE_OUT);
 
-	QWaitCondition qwc;
-	QMutex mtx;
-	mtx.lock();
+	cmd_waiter.append(strCmdID);
 	int ret=ping_cl->sendData(strCmdLine);
-	cmd_waiter[props["1"]]=&qwc;
-	qwc.wait(&mtx);//会不会锁死啊。。。。
-
+	while(true)
+	{
+		ping_cl->getSocket()->waitForReadyRead();
+		if(!cmd_waiter.contains(strCmdID))
+			break;
+	}
+	QString strTempFile=strTempDirectory+"/out/"+strCmdID+".tmp";
+	QFile qf(strTempFile);
+	qf.open(QIODevice::ReadOnly);
+	QByteArray buffer=qf.readAll();
+	qf.close();
 	if(ret==ERR_NONE)
 		syncdb->cmd_tag(props["1"],TAG_SENDING,"",QUEUE_OUT);
-	//等待返回
-	//TODO:
 
-	return PtrFile();
+	return QList<PtrFile>();
 }
 quint32 SessionManager::put_file(PtrFile pf)
 {

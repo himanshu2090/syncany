@@ -40,8 +40,8 @@ public:
 	int do_sendcmd(Client *cl,CommandMap props,QByteArray data=QByteArray());
 
 public:
-	QMap<QString,QWaitCondition *> cmd_waiter;
-	PtrFile ls_file(QString strUrl);
+	QList<QString> cmd_waiter;
+	QList<PtrFile> ls_file(QString strUrl);
 	quint32 put_file(PtrFile pf);
 	quint32 rm_file(PtrFile pf);
 private:

@@ -48,17 +48,17 @@ void LocalFileWatcher::heartbeat()
 	ptrfiles=SyncBaseFile::getAllFiles();
 	for(quint32 i=0;i<dirs_all.size();++i)
 	{
-		QString strUri=local2uri(dirs_all[i]);
-		QMap<QString,PtrFile>::iterator it=ptrfiles.find(strUri);
+		QString strUrl=local2uri(dirs_all[i]);
+		QMap<QString,PtrFile>::iterator it=ptrfiles.find(strUrl);
 		QFileInfo qfi(dirs_all[i]);
 		if(it==ptrfiles.end())
 		{
-			dirs_add.append(strUri);
+			dirs_add.append(strUrl);
 			PtrFile pf=new SyncBaseFile();
 			pf->setLastModifyTime(qfi.lastModified());
 			pf->setSize(qfi.size());
 			pf->setLocalUrl(qfi.absoluteFilePath());
-			pf->setUrl(strUri);
+			pf->setUrl(strUrl);
 			pf->flush();
 		}
 		else
@@ -69,7 +69,7 @@ void LocalFileWatcher::heartbeat()
 			//qDebug(qfi.lastModified().toString().toStdString().c_str());
 			if(pf->getLastModifyTime().toString()!=qfi.lastModified().toString())
 			{
-				dirs_update.append(strUri);
+				dirs_update.append(strUrl);
 				pf->setLastModifyTime(qfi.lastModified());
 				pf->setSize(qfi.size());
 				pf->setLocalUrl(qfi.absoluteFilePath());
