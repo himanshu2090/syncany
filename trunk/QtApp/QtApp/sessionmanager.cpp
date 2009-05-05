@@ -127,7 +127,9 @@ void SessionManager::heartbeat()
 	{
 		heartbeat_count=0;
 		if(ping_cl && ping_cl->getSocket()->state()==QTcpSocket::ConnectedState)
+		{
 			say_ping(ping_cl);
+		}
 	}
 #endif
 	if(ping_cl && ping_cl->getSocket()->state()==QTcpSocket::ConnectedState)
@@ -231,7 +233,7 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 			{
 				syncdb->cmd_tag(props["1"],TAG_COMPLETE,strCmdLine,QUEUE_OUT);
 				//根据响应的命令来处理
-				do_state(cl,props,buffer);
+				do_state(cl,props,old_props,buffer);
 			}
 			else
 				emit sigLogger(QString::fromLocal8Bit("收到错误的命令响应A：")+strCmdLine);
@@ -245,27 +247,61 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 int SessionManager::say_hello(Client *cl)
 {
 	CommandMap props;
+	int ret=ERR_NONE;
 	//hello 101 syncany_client=2.1.0.0 protocol=1.0.1.0 platform=symbian-os-s60.3
+
+	QString strSessionID=synconf->getstr("session");
+	QString strDeviceID=synconf->getstr("deviceid");
+	if(strSessionID!="" && strDeviceID!="")
+	{
+		props["session"]=strSessionID;
+		props["deviceid"]=strDeviceID;
+	}
+	else
+	{
+		QString strUsername=synconf->getstr("user_id");
+		QString strPassword=synconf->getstr("user_password");
+		if(strUsername!="" && strPassword!="")
+		{
+			props["user"]=strUsername;
+			props["pass"]=strPassword;
+
+			if(synconf->getstr("doregister","0")=="1")
+			{
+				//这里是注册，而不是登录
+				props["0"]=get_cmdstr(CMD_ALERT);
+				props["1"]=generate_cmdid();
+				props["type"]=ALERT_TYPESTR_SIGNUP;
+				QString strCmdLine=convert_to_cmdline(props)+"\n";
+				syncdb->cmd_put(props["1"],strCmdLine,QUEUE_OUT);
+				CommandMap reg_props=syncSend(cl,props["1"],strCmdLine);
+				//ret=cl->sendData(strCmdLine);
+				//if(ret==ERR_NONE)
+				//	syncdb->cmd_tag(props["1"],TAG_SENDING,"",QUEUE_OUT);
+				if(reg_props["2"].toInt()!=STA_OK)
+					return ret;
+				//注册成功，开始登录
+				props.clear();
+				props["user"]=strUsername;
+				props["pass"]=strPassword;
+			}
+		}
+		else
+		{
+			//未填写注册信息，不hello
+			return ret;
+		}
+	}
 	props["syncany_client"]=synconf->getinfo("client_version");
 	props["protocol"]=synconf->getinfo("protocol_version");
 	props["platform"]=synconf->getinfo("os_version");
-
-	QString strSessionID=synconf->getstr("session_id");
-	if(strSessionID!="")
-		props["sessionid"]=strSessionID;
-	else
-	{
-		props["user"]=synconf->getstr("user_id");
-		props["pwd"]=synconf->getstr("user_password");
-	}
-	props["devuid"]=synconf->getstr("device_id");
 
 	props["0"]=get_cmdstr(CMD_HELLO);
 	props["1"]=generate_cmdid();
 
 	QString strCmdLine=convert_to_cmdline(props)+"\n";
 	syncdb->cmd_put(props["1"],strCmdLine,QUEUE_OUT);
-	int ret=cl->sendData(strCmdLine);
+	ret=cl->sendData(strCmdLine);
 	if(ret==ERR_NONE)
 		syncdb->cmd_tag(props["1"],TAG_SENDING,"",QUEUE_OUT);
 	//else //send fail....?
@@ -392,7 +428,24 @@ int SessionManager::do_job(Client *cl,CommandMap props,QByteArray data)
 		}
 	case CMD_ALERT:
 		{
-			//TODO：处理注册结果，事件通知——需要向上层冒泡，能处理的自行处理
+			//处理ALERT，能处理的自行处理。不能处理的一律上报到事件通知列表
+// #define ALERT_TYPESTR_SINGLE_CHOICE "singlechoice"
+// #define ALERT_TYPESTR_MULTI_CHOICE "mutilchoice"
+// #define ALERT_TYPESTR_INPUT "input"
+// #define ALERT_TYPESTR_REDIRECT "redirect" 
+			if(props[KEY_TYPE]==ALERT_TYPESTR_REDIRECT)
+			{
+				//收到服务器重定向通知
+				QString strHost=props[KEY_SERVER_IP];
+				QString strPort=props[KEY_SERVER_PORT];
+				synconf->setstr("server_host",strHost);
+				synconf->setstr("server_port",strPort,true);
+				CommandMap ack_props;
+				ack_props["1"]=props["1"];//回应的命令ID
+				ack_props["2"]=QString::number(STA_OK);
+				if(ack_state(cl,ack_props)==ERR_NONE)
+				break;
+			}
 			emit sigLogger(QString::fromLocal8Bit("收到Alert命令，向上冒泡通知：")+convert_to_cmdline(props));
 		}
 		break;
@@ -400,10 +453,10 @@ int SessionManager::do_job(Client *cl,CommandMap props,QByteArray data)
 		{
 			CommandMap ack_props;
 			ack_props["1"]=props["1"];//回应的命令ID
-			ack_props["sessionid"]=synconf->getstr("session_id");
+			ack_props["sessionid"]=synconf->getstr("session");
 			ack_props["user"]=synconf->getstr("user_id");
 			ack_props["pwd"]=synconf->getstr("user_password");
-			ack_props["devuid"]=synconf->getstr("device_id");
+			ack_props["devuid"]=synconf->getstr("deviceid");
 			if(ack_state(cl,ack_props)==ERR_NONE)
 			{
 				emit sigLogger("ack_whoareyou completed!");
@@ -429,12 +482,85 @@ int SessionManager::do_sendcmd(Client *cl,CommandMap props,QByteArray data)
 	return cl->sendData(strCmdLine);
 }
 
-int SessionManager::do_state(Client *cl,CommandMap props,QByteArray data)
+int SessionManager::do_state(Client *cl,CommandMap state_props,CommandMap cmd_props,QByteArray data)
 {
+	QString strTmp=convert_to_cmdline(state_props);
+	QString strCmd=convert_to_cmdline(cmd_props);
+	if(cmd_props["0"]==get_cmdstr(CMD_ALERT))
+	{
+		if(cmd_props["type"]==ALERT_TYPESTR_SIGNUP)
+		{
+			if(state_props["2"].toInt()==STA_OK)
+			{
+				emit msgBox(tr("注册成功"),"你的帐号"+synconf->getstr("user_id")+"成功注册！");
+				synconf->setstr("session",state_props["session"]);
+				synconf->setstr("deviceid",state_props["deviceid"]);
+				synconf->setstr("doregister","",true);
+			}
+			else
+			{
+				QString strReason=state_props["reason"];
+				emit msgBox(tr("注册失败"),"你的帐号"+synconf->getstr("user_id")+"注册失败！错误代码["+state_props["2"]+"]！原因：["+strReason+"]");
+			}
+		}
+		return ERR_NONE;
+	}
+	if(cmd_props["0"]==get_cmdstr(CMD_HELLO))
+	{
+		if(cmd_props["user"]!="")
+		{
+			if(state_props["2"].toInt()==STA_OK)
+			{
+				emit msgBox(tr("登录成功"),"你的帐号"+synconf->getstr("user_id")+"成功登录！");
+				if(state_props["session"]!="")
+				{
+					synconf->setstr("session",state_props["session"]);
+					synconf->setstr("deviceid",state_props["devviceid"],true);
+				}
+			}
+			else
+			{				
+				QString strReason=state_props["reason"];
+				emit msgBox(tr("登录失败"),"你的帐号"+synconf->getstr("user_id")+"登录失败！错误代码["+state_props["2"]+"]！原因：["+strReason+"]");
+			}
+		}
+		else
+		{
+			QString strReason=state_props["reason"];
+			emit msgBox(tr("连接成功"),"你成功的连接到服务器，但是尚未登录！");
+		}
+		return ERR_NONE;
+	}
+	//just for debug watch!
 	return 0;
 }
 
+
 //根据远程地址，获取文件信息
+
+CommandMap  SessionManager::syncSend(Client *cl,QString strCmdID,QString strCmdLine,QByteArray buffer)
+{
+	if(cl==null)
+		return CommandMap();
+	cmd_waiter.append(strCmdID);
+	cl->sendData(strCmdLine);
+	if(buffer.size()>0)//必须要保证buffer的尺寸符合要求，否则会导致协议栈处理问题
+	{
+		int ret=cl->sendData(buffer);
+		if(ret==ERR_NONE)
+			syncdb->cmd_tag(strCmdID,TAG_SENDING,"",QUEUE_OUT);
+	}
+	while(true)
+	{
+		cl->getSocket()->waitForReadyRead();
+		if(!cmd_waiter.contains(strCmdID))
+			break;
+	}
+	//取出响应内容返回（buffer呢？）
+	CommandMap props=syncdb->cmd_get_ret(strCmdID,QUEUE_OUT);
+	return props;
+}
+
 QList<PtrFile> SessionManager::ls_file(QString strUrl)
 {
 	if(ping_cl == null)
@@ -464,8 +590,31 @@ QList<PtrFile> SessionManager::ls_file(QString strUrl)
 	qf.close();
 	if(ret==ERR_NONE)
 		syncdb->cmd_tag(props["1"],TAG_SENDING,"",QUEUE_OUT);
-
-	return QList<PtrFile>();
+	QList<PtrFile> ptrfiles;
+	QString strBuffer=buffer;
+	QStringList strList=strBuffer.split(' ');
+	for(int i=0;i<strList.size();++i)
+	{
+		if(strList[i].length()==0)
+			continue;
+		CommandMap props=convert_from_cmdline(strList[i]);
+		/*filename	本地磁盘文件名（带全路径）
+			filesize	本地文件大小
+			url	相对URL表示
+			anchor 锚点（服务器产生）
+			anchor_time 锚点对应的最后修改时间，本地存储，在更新锚点时更新
+			modify_time 最后修改时间*/
+		QString strType=props["type"];
+		PtrFile ptrfile=createFileObject(strType);
+		ptrfile->setUrl(props["url"]);
+		if(ptrfile->getType()==TYPE_FILE)
+		{
+			ptrfile->setSize(props["filesize"].toInt());
+			ptrfile->setAnchor(props["anchor"].toInt());
+		}
+		ptrfiles.push_back(ptrfile);
+	}
+	return ptrfiles;
 }
 quint32 SessionManager::put_file(PtrFile pf)
 {

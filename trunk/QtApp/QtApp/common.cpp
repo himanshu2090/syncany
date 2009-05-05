@@ -1,6 +1,7 @@
 #include "common.h"
 
-
+#include "syncbasefile.h"
+#include "syncbasedir.h"
 //将map转换为命令行
 QString convert_to_cmdline(CommandMap props)
 {
@@ -167,4 +168,18 @@ QByteArray raw_url_decode(QByteArray &str)
 //	*dest = '\0';
 //	return dest - str;
 //}
+
+
+PtrFile createFileObject(QString strType)
+{
+	if(strType=="dir")
+	{
+		return new SyncBaseDir();
+	}
+	if(strType=="file")
+	{
+		return new SyncBaseFile();
+	}
+	return PtrFile();
+}
 

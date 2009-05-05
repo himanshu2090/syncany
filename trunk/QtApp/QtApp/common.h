@@ -2,6 +2,7 @@
 #define _INCLUDE_QT_APP_COMMON_H_
 
 #include <QtCore/QtCore>
+#include <QtGui/QtGui>
 #include <QtNetwork/QtNetwork>
 #include <QSysInfo>
 #include <QDateTime>
@@ -16,7 +17,23 @@
 #define NULL null
 #endif
 
+//常用KEY=VALUE的KEY定义
+#define KEY_USER "user"
+#define KEY_PASS "pass"
+#define KEY_URL "url"
+#define KEY_TYPE "type"
+#define KEY_REASON "reason"
+#define KEY_SERVER_IP "serverip"
+#define KEY_SERVER_PORT "serverport"
 
+
+
+//常用ALERT 的type
+#define ALERT_TYPESTR_SIGNUP "signup"
+#define ALERT_TYPESTR_SINGLE_CHOICE "singlechoice"
+#define ALERT_TYPESTR_MULTI_CHOICE "mutilchoice"
+#define ALERT_TYPESTR_INPUT "input"
+#define ALERT_TYPESTR_REDIRECT "redirect" 
 //错误码列表
 enum ERROR_CODE_LIST
 {
@@ -170,7 +187,7 @@ public:
 	virtual quint32 setLastModifyTime(QDateTime)=0; //最后修改时间
 	virtual quint32 setAnchor(quint32)=0;//设置锚点
 	virtual quint32 setAnchorTime(QDateTime dt)=0;//设置锚点对应的时间信息
-	virtual quint32 setUrl(QString strUrl)=0;//设置URI信息
+	virtual quint32 setUrl(QString strUrl)=0;//设置URL信息
 	virtual quint32 setLocalUrl(QString strUrl)=0;//设置localfile信息
 	virtual quint32 setSize(quint32)=0;//设置大小值
 	virtual quint32 flush()=0;//将变更记录下来
@@ -184,8 +201,8 @@ class IFolder:public IFile
 {
 public:
 	IFolder(QObject *parent=null):IFile(parent){}
-	virtual quint32 insert(IFile *subfile)=0;
-	virtual quint32 remove(IFile *subfile)=0;
+	virtual quint32 insert(PtrFile subfile)=0;
+	virtual quint32 remove(PtrFile subfile)=0;
 	virtual QList<PtrFile> getSubFiles()=0;
 };
 
@@ -200,6 +217,9 @@ signals:
 
 
 typedef QPointer<IDevice> PtrDevice;
+
+//根据类型信息串，创建相应的对象
+PtrFile createFileObject(QString strType);
 
 #endif
 

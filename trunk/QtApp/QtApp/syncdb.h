@@ -48,6 +48,7 @@ public slots:
 	bool cmd_exist(QString strCmdID,QUEUE_ID nQueue=QUEUE_IN);
 	int cmd_reset_queue();//将所有未完成的命令转为未发送状态，在程序退出或启动时执行，以便重发命令
 	CommandMap cmd_get(QString strCmdID,QUEUE_ID nQueue=QUEUE_IN);
+	CommandMap cmd_get_ret(QString strCmdID,QUEUE_ID nQueue=QUEUE_IN);
 
 	//可同步的SQL语句执行接口
 	int execSql(QString strSql);

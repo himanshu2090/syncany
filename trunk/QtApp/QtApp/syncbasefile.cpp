@@ -16,7 +16,7 @@ CREATE TABLE [sync_files] (
 [anchor] INT, 
 [anchor_time] DATETIME, 
 [modify_time] DATETIME,
-CONSTRAINT [sqlite_autoindex_sync_files_uri] PRIMARY KEY ([url]));
+CONSTRAINT [sqlite_autoindex_sync_files_url] PRIMARY KEY ([url]));
 
 
 */
@@ -55,7 +55,7 @@ void SyncBaseFile::createTable()
 			"[anchor] INT, \n"
 			"[anchor_time] DATETIME, \n"
 			"[modify_time] DATETIME,\n"
-			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_uri] PRIMARY KEY ([url]));\n";
+			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_url] PRIMARY KEY ([url]));\n";
 		syncdb->execSql(strSql);
 	}
 }

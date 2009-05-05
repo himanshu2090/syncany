@@ -174,6 +174,21 @@ CommandMap SyncDB::cmd_get(QString strCmdID,QUEUE_ID nQueue)
 }
 
 
+CommandMap SyncDB::cmd_get_ret(QString strCmdID,QUEUE_ID nQueue)
+{
+	CommandMap props;
+	QString strSql;
+	strSql="select cmd_ret from %1 where cmd_id=%2 limit 1";
+	CppSQLite3Query result=querySql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID));
+	if(!result.eof())
+	{
+		if(!result.fieldIsNull(0))
+		{
+			props=convert_from_cmdline(result.getStringField(0));
+		}
+	}
+	return props;
+}
 int SyncDB::cmd_reset_queue()
 {
 	QString strSql;
