@@ -38,6 +38,7 @@ void Synconf::load_conf()
 		QString strConfig=qf.readAll();
 		qf.close();
 		QStringList strList=strConfig.split("\n");
+		m_config.clear();//允许重复载入
 		for(int i=0;i<strList.size();++i)
 		{
 			QString str=strList[i];
@@ -57,6 +58,11 @@ void Synconf::save_conf()
 	CommandMap::const_iterator it=m_config.constBegin();
 	while(it!=m_config.end())
 	{
+		if(it.value()=="")
+		{
+			++it;
+			continue;
+		}
 		strConfig+=it.key()+"="+it.value()+"\n";
 		++it;
 	}
@@ -83,6 +89,7 @@ QString Synconf::getstr(QString strKey,QString strDefault)//获取配置项内容
 
 void Synconf::setstr(QString strKey,QString strValue,bool flush) //设置配置项
 {
+	emit keyChanged(strKey);
 	m_config[strKey]=strValue;
 	if(flush)
 		save_conf();

@@ -19,7 +19,7 @@ public:
 	QString generate_cmdid();
 signals:
 	void sigLogger(QString);
-
+	void msgBox(QString ,QString );
 public slots:
 	void heartbeat();
 	void ConnectHost();
@@ -36,9 +36,10 @@ public:
 	int ack_state(Client *cl,CommandMap props,QByteArray data=QByteArray());//可传输数据的版本
 
 	int do_job(Client *cl,CommandMap props,QByteArray data=QByteArray());
-	int do_state(Client *cl,CommandMap props,QByteArray data=QByteArray());
+	int do_state(Client *cl,CommandMap state_props,CommandMap cmd_props,QByteArray data=QByteArray());
 	int do_sendcmd(Client *cl,CommandMap props,QByteArray data=QByteArray());
 
+	CommandMap syncSend(Client *cl,QString strCmdID,QString strCmdLine,QByteArray buffer=QByteArray());
 public:
 	QList<QString> cmd_waiter;
 	QList<PtrFile> ls_file(QString strUrl);

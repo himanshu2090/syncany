@@ -21,7 +21,7 @@ private:
 	QMap<QString,PtrFile> ptrfiles;
 
 public:
-	static QString local2uri(QString);
+	static QString local2url(QString);
 
 signals:
 	void filesChanged(QStringList &strFiles);

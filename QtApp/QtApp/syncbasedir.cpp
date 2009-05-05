@@ -88,7 +88,7 @@ quint32 SyncBaseDir::setAnchorTime(QDateTime dt)//设置锚点对应的时间信息
 	return ERR_NOT_SUPPORT;
 }
 
-quint32 SyncBaseDir::setUrl(QString url)//设置URI信息
+quint32 SyncBaseDir::setUrl(QString url)//设置URL信息
 {
 	strUrl=url;
 	return ERR_NONE;

@@ -16,9 +16,9 @@ private:
 
 	CommandMap m_config;
 
-	void load_conf();
 	void init_default();//将有默认值但未设置的项设置为默认值
 public:
+	void load_conf();
 	void save_conf();
 	static Synconf *instance();
 	static QString getOsVersionString();
@@ -26,6 +26,8 @@ public:
 	void setstr(QString strKey,QString strValue,bool flush=false); //设置配置项
 
 	QString getinfo(QString strKey);//一些只读信息的获取
+signals:
+	void keyChanged(QString key);
 };
 
 #endif // SYNCONF_H

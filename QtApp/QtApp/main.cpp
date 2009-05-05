@@ -29,7 +29,8 @@ int main(int argc, char *argv[])
 	QTextCodec::setCodecForCStrings(codec);
 	try{
 		MyApp a(argc, argv);
-		QtApp w;
+		//QDialog ( QWidget * parent = 0, Qt::WindowFlags f = 0 )
+		QtApp w(null,Qt::CustomizeWindowHint  | Qt::WindowTitleHint | Qt::WindowSystemMenuHint);
 		w.show();
 		return a.exec();
 	}

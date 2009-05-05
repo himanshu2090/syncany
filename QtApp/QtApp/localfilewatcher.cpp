@@ -48,7 +48,7 @@ void LocalFileWatcher::heartbeat()
 	ptrfiles=SyncBaseFile::getAllFiles();
 	for(quint32 i=0;i<dirs_all.size();++i)
 	{
-		QString strUrl=local2uri(dirs_all[i]);
+		QString strUrl=local2url(dirs_all[i]);
 		QMap<QString,PtrFile>::iterator it=ptrfiles.find(strUrl);
 		QFileInfo qfi(dirs_all[i]);
 		if(it==ptrfiles.end())
@@ -92,7 +92,7 @@ void LocalFileWatcher::heartbeat()
 }
 
 
-QString LocalFileWatcher::local2uri(QString strLocal)
+QString LocalFileWatcher::local2url(QString strLocal)
 {
 	Synconf *synconf=Synconf::instance();
 	QString strSyncDirectory=synconf->getstr("sync_dir","C:/download/");
@@ -106,10 +106,10 @@ QString LocalFileWatcher::local2uri(QString strLocal)
 		qDebug("错误的本地目录：%s",strTemp.toStdString().c_str());
 	}
 	
-	if(!strTemp.startsWith("/home/wujunping/testfold/"))
-		return "/home/wujunping/testfold/"+strTemp;
-	//if(!strTemp.startsWith("/"))
-	//	return "/"+strTemp;
+	//if(!strTemp.startsWith("/home/wujunping/testfold/"))
+	//	return "/home/wujunping/testfold/"+strTemp;
+	if(!strTemp.startsWith("/"))
+		return "/"+strTemp;
 	return strTemp;
 }
 
