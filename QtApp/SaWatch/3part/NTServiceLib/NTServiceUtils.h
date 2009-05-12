@@ -7,7 +7,10 @@
 	\author		¸ð±ø
 	\date		2005-12-12
 */
+#ifndef _NTSERVICEUTILS_H_
+#define _NTSERVICEUTILS_H_
 #include <windows.h>
+#include <WinSvc.h>
 #include <time.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -212,3 +215,4 @@ static BOOL StopExecuteService(LPCSTR lpszServiceName, int dwTimeout)
 	return bResult;
 }
 
+#endif

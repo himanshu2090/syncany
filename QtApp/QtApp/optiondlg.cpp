@@ -37,3 +37,4 @@ void OptionDlg::on_pushButtonOptionOK_clicked()
 	synconf->load_conf();
 	this->close();
 }
+

@@ -1,12 +1,4 @@
+#if !defined(_SAWATCH_H_)
+#define _SAWATCH_H_
 
-#if !defined(AFX_SAWATCH_H__AA0ED6EF_A1DF_446F_9ABC_642A6BDBEFF7__INCLUDED_)
-#define AFX_SAWATCH_H__AA0ED6EF_A1DF_446F_9ABC_642A6BDBEFF7__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-//#include "resource.h"
-
-
-#endif // !defined(AFX_SAWATCH_H__AA0ED6EF_A1DF_446F_9ABC_642A6BDBEFF7__INCLUDED_)
+#endif // !defined(_SAWATCH_H_)

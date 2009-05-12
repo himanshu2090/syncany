@@ -1,103 +1,121 @@
 // SaWatch.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
-#include "SaWatch.h"
-#include "DirectoryChanges.h"
-#include "DelayedDirectoryChangeHandler.h"
+#pragma warning(disable:4786)
+#pragma warning(disable:4996)
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "SaWatch.h"
+#include "DWLib.h"
+#include <windows.h>
+#include "../3part/NTServiceLib/NTService.cpp"
+#include "../3part/sqllite3/sqlite3.h"
+
+#include <stdio.h>
+#include <string>
+#include "../bin/sqlite3.h"
+
+#pragma comment (lib,"DWLib.lib")
+#pragma comment (lib,"sqlite3.lib")
 
 /////////////////////////////////////////////////////////////////////////////
 // The one and only application object
+sqlite3* gSqlDB;
+char* gCurDir;
+HANDLE hDbMutex;
+HANDLE hExitEvent;
 
-CWinApp theApp;
+//////////////////////////////////////////////////////////////////////////
 
-using namespace std;
-
-CString GetLastErrorMessageString(DWORD dwLastError )
+void PrintChangesOnScreen(bool IsDir, char ChangeType, char* FileName[])
 {
-	LPVOID lpMsgBuf = NULL;
-	FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL,
-		dwLastError, 
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-		(LPTSTR) &lpMsgBuf, 0, NULL );
-	
-	CString str = (LPCTSTR)lpMsgBuf;
-	
-	if( lpMsgBuf != NULL )
-		LocalFree(lpMsgBuf);	
-	
-	return str;
+	switch(ChangeType)
+	{
+	case 'A':
+		if(IsDir)
+			printf("DIR-Added:%s\n",FileName[0]);
+		else
+			printf("FILE-Added:%s\n",FileName[0]);
+		break;
+	case 'M':
+		if(IsDir)
+			printf("DIR-Modified:%s\n",FileName[0]);
+		else
+			printf("FILE-Modified:%s\n",FileName[0]);
+		break;
+	case 'R':
+		if(IsDir)
+			printf("DIR-Removed:%s\n",FileName[0]);
+		else
+			printf("FILE-Removed:%s\n",FileName[0]);
+		break;
+	case 'N':
+		if(IsDir)
+			printf("DIR-Renamed:%s -> %s\n",FileName[0],FileName[1]);
+		else
+			printf("FILE-Renamed:%s -> %s\n",FileName[0],FileName[1]);
+		break;
+	default:
+		break;
+	}
 }
 
-void startWatch()
+// 实现NT Service框架必须实现的函数
+class SaWatchNTService : public CNTService
 {
-	CDirectoryChangeWatcher	m_DirWatcher(FALSE);
-	CDirectoryChangeHandler	m_DirChangeHandler;
+public:
+	SaWatchNTService() : CNTService("SaWatch"){}
 
-	CString	m_strDirectoryToMonitor = "C:\\test\\"; 
-
-
-	BOOL bWatchSubDir = TRUE;
-	
-
-	CString m_strIncludeFilter1;
-	m_strIncludeFilter1.Empty();
-	CString	m_strExcludeFilter1;
-	m_strExcludeFilter1.Empty();
-
-	
-	DWORD dwChangeFilter = FILE_NOTIFY_CHANGE_FILE_NAME 
-		| FILE_NOTIFY_CHANGE_DIR_NAME 
-		| FILE_NOTIFY_CHANGE_LAST_WRITE 
-		| FILE_NOTIFY_CHANGE_LAST_ACCESS 
-		| FILE_NOTIFY_CHANGE_SIZE 
-		| FILE_NOTIFY_CHANGE_ATTRIBUTES 
-		| FILE_NOTIFY_CHANGE_LAST_WRITE 
-		| FILE_NOTIFY_CHANGE_LAST_ACCESS 
-		| FILE_NOTIFY_CHANGE_CREATION 
-		| FILE_NOTIFY_CHANGE_SECURITY;
-
-	if( m_DirWatcher.IsWatchingDirectory( m_strDirectoryToMonitor) )
-		m_DirWatcher.UnwatchDirectory( m_strDirectoryToMonitor );
-	
-	
-	DWORD dwWatch = 0;
-	if( ERROR_SUCCESS != (dwWatch = m_DirWatcher.WatchDirectory(m_strDirectoryToMonitor, 
-		dwChangeFilter,
-		&m_DirChangeHandler,
-		bWatchSubDir,
-		m_strIncludeFilter1,
-		m_strExcludeFilter1)) )
+	int RunService(int argc, char* argv[])
 	{
-		printf("Failed to start watch: %s\n",  GetLastErrorMessageString( dwWatch ) );
+		int rc =0;
+		printf("Service is starting...\n");
+	
+		hExitEvent = CreateEvent(NULL,0,0,0);
+		
+		RegChangeNotifyCallBack(PrintChangesOnScreen,false);
+
+		///程序进入了运行状态;
+		do
+		{
+			//轮询数据库中要监视的目录列表并监视之
+			int nDirCount = GetWatchingDirCount();
+			SaWatchingDir** pdirs=NULL;
+			pdirs = (SaWatchingDir**)calloc(sizeof(SaWatchingDir),nDirCount);
+			
+			int nItem = GetWatchingDirList(pdirs,nDirCount);
+			SaWatchingDir* pItem = ((SaWatchingDir*)pdirs);
+			for(int i=0;i<nItem;i++)
+			{
+				EnableWatchDir(pItem->Dir,pItem->IncludeFilter,pItem->ExcludeFilter);
+				pItem++;
+			}
+			if(pdirs)
+				free(pdirs);
+			
+		}while(WAIT_TIMEOUT == WaitForSingleObject(hExitEvent,10000)); //等待退出事件
+		
+		CloseHandle( hExitEvent);
+		
+		CleanApp();
+
+		return rc;
 	}
 	
-	while(1)
-		Sleep(200);
-}
-
-
+	void StopService()
+	{	
+		printf("Service is stopping...\n");
+		SetEvent(hExitEvent); //发信号退出程序
+	}
+};
 
 int main(int argc, char* argv[])
 {
-	int nRetCode = 0;
+	SaWatchNTService *service = new SaWatchNTService();
+	if (service == NULL)
+	{
+		printf("Error: Service class derived from CNTService doesn't instance, please check your code.\n");
+		return ERROR_INVALID_FUNCTION;
+	}
 
-	// initialize MFC and print and error on failure
-	if (!AfxWinInit(::GetModuleHandle(NULL), NULL, ::GetCommandLine(), 0))
-		return -1;
-
-	startWatch();
-
-	while(1)
-		Sleep(200);
-
-	return nRetCode;
+	return service->EnterService(argc, argv);
 }
-
-

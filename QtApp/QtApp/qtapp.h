@@ -7,6 +7,7 @@
 #include "synconf.h"
 #include "syncdb.h"
 #include "localfilewatcher.h"
+#include "eventlistdlg.h"
 //#include <QSystemTrayIcon>
 //#include <QMenu>
 //#include <QCloseEvent>
@@ -22,15 +23,18 @@ private:
 	Ui::QtAppClass ui;
 	QPointer<SessionManager> sm;
 	QPointer<LocalFileWatcher> watcher;
+	//singleton class
 	Synconf *synconf;
 	SyncDB *syncdb;
-
+	EventList *el;
+	QPointer<EventListDlg> eventDlg;
 public:
 	bool bAllowClose;
 private:
 	QMenu *trayMenu;
 	QSystemTrayIcon *trayIcon;
 	QAction *quitAction;
+	QAction *showEventListAction;
 	QMutex m_locker_log;
 private slots:
 	void on_pushButtonDecode_clicked();
@@ -59,7 +63,10 @@ public slots:
 	void trayActived(QSystemTrayIcon::ActivationReason );
 	void trayMessage(QString strTitle,QString strInfo);
 	void trigger_quit();
-
+	void trigger_showEventList();
+protected:
+	void timerEvent(QTimerEvent *event);
+	int eventTimerID;
 private:
 	void createActions();
 	void createTrayIcon();

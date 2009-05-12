@@ -64,9 +64,9 @@ CommandMap convert_from_cmdline(QString strCmdLine)
 	return props;
 }
 
+static unsigned char hexchars[] = "0123456789ABCDEF";
 
-
-QByteArray raw_url_encode(QByteArray &s)
+QByteArray raw_url_encode(QByteArray s)
 {
 	QByteArray str;
 	int x, y;
@@ -85,7 +85,7 @@ QByteArray raw_url_encode(QByteArray &s)
 	}
 	return str;
 }
-QByteArray raw_url_decode(QByteArray &str)
+QByteArray raw_url_decode(QByteArray str)
 {
 	int len=0;
 	int maxlen=str.length();

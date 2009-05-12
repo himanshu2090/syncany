@@ -189,8 +189,10 @@
 		
 					
 ************************************************************/
-
-#include "stdafx.h"
+#define _WIN32_WINNT 0x500	//so that I can use ReadDirectoryChanges
+#include <afxwin.h>         // MFC core and standard components
+#include <afxext.h> 
+#include "DWLib.h"
 #include "DirectoryChanges.h"
 #include "DelayedDirectoryChangeHandler.h"
 
@@ -615,21 +617,35 @@ long CDirectoryChangeHandler::ReleaseReferenceToWatcher(CDirectoryChangeWatcher 
 void CDirectoryChangeHandler::On_FileAdded(const CString & strFileName)
 { 
 	TRACE(_T("The following file was added: %s\n"), strFileName);
+	if(IsDirectory(strFileName))
+		OnDirChanged((char*)(LPCSTR)strFileName,'A');
+	else
+		OnFileChanged((char*)(LPCSTR)strFileName,'A');
 }
 
 void CDirectoryChangeHandler::On_FileRemoved(const CString & strFileName)
 {
 	TRACE(_T("The following file was removed: %s\n"), strFileName);
+	if(IsDirectory(strFileName))
+		OnDirChanged((char*)(LPCSTR)strFileName,'R');
+	else
+		OnFileChanged((char*)(LPCSTR)strFileName,'R');
 }
 
 void CDirectoryChangeHandler::On_FileModified(const CString & strFileName)
 {
 	TRACE(_T("The following file was modified: %s\n"), strFileName);
+	if(!IsDirectory(strFileName))
+		OnFileChanged((char*)(LPCSTR)strFileName,'M');
 }
 
 void CDirectoryChangeHandler::On_FileNameChanged(const CString & strOldFileName, const CString & strNewFileName)
 {
 	TRACE(_T("The file %s was RENAMED to %s\n"), strOldFileName, strNewFileName);
+	if(IsDirectory(strOldFileName))
+		OnDirRenamed((char*)(LPCSTR)strOldFileName,(char*)(LPCSTR)strNewFileName);
+	else
+		OnFileRenamed((char*)(LPCSTR)strOldFileName,(char*)(LPCSTR)strNewFileName);
 }
 void CDirectoryChangeHandler::On_ReadDirectoryChangesError(DWORD dwError, const CString & strDirectoryName)
 {

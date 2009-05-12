@@ -43,14 +43,14 @@ void Client::DisconnectHost()
 
 void Client::connected ()
 {
-	emit connected(this);
 	emit sigLogger("connected!");
+	emit connected(this);
 }
 
 void Client::disconnected ()
 {
-	emit disconnected(this);
 	emit sigLogger("disconnected!");
+	emit disconnected(this);
 }
 
 void Client::error ( QTcpSocket::SocketError socketError )

@@ -11,21 +11,15 @@ enum QUEUE_ID
 	QUEUE_OUT=1,
 };
 
-static const char* strQueueTableName[]=
-{
-	"sqin",
-	"sqout"
-};
+#define TABLE_SQIN  "sqin"
+#define TABLE_SQOUT "sqout"
+#define TABLE_SYNC_FILES    "sync_files"
 
 enum SYNC_TYPES
 {
 	SYNC_FILES=0,
 };
 
-static const char* strSyncTableName[]=
-{
-	"sync_files",
-};
 
 class SyncDB : public QObject
 {

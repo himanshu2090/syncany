@@ -1,8 +1,10 @@
 // DelayedDirectoryChangeHandler.cpp: implementation of the CDelayedDirectoryChangeHandler2 class.
 //
 //////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
+#define _WIN32_WINNT 0x500	//so that I can use ReadDirectoryChanges
+#include <afxwin.h>         // MFC core and standard components
+#include <afxext.h> 
+#include "DWLib.h"
 #include "DirectoryChanges.h"
 #include "DelayedDirectoryChangeHandler.h"
 #include <process.h>//for _beginthreadex
@@ -226,7 +228,7 @@ static LRESULT CALLBACK DelayedNotificationWndProc(HWND hWnd, UINT message, WPAR
 				//	and the change handler object was deleted before the notification could be dispatched to this function.
 				//
 				//  or perhaps, somebody's implementation of an overridden function caused an exception
-				TRACE(_T("Following exception occurred: %d -- File: %s Line: %d\n"), dwEx, _T(__FILE__), __LINE__);
+				printf(_T("Following exception occurred: %d -- File: %s Line: %d\n"), dwEx, _T(__FILE__), __LINE__);
 			}
 		}
 		
@@ -252,7 +254,7 @@ long CDelayedNotificationWindow::AddRef()//creates window for first time if nece
 	if( InterlockedIncrement(&s_nRefCnt) == 1
 		||	!::IsWindow( s_hWnd ) )
 	{
-		TRACE(_T("CDelayedNotificationWindow -- Creating the notification window\n"));
+		printf(_T("CDelayedNotificationWindow -- Creating the notification window\n"));
 		VERIFY( CreateNotificationWindow() );
 	}
 	return s_nRefCnt;
@@ -264,7 +266,7 @@ long CDelayedNotificationWindow::Release()//destroys window for last time if nec
 	if( (nRefCnt = InterlockedDecrement(&s_nRefCnt)) == 0 )
 	{
 		//no body else using the window so destroy it?
-		TRACE(_T("CDelayedNotificationWindow -- Destroying the notification window\n"));
+		printf(_T("CDelayedNotificationWindow -- Destroying the notification window\n"));
 		DestroyWindow( s_hWnd );
 		s_hWnd = NULL;
 	}
@@ -286,7 +288,7 @@ BOOL CDelayedNotificationWindow::RegisterWindowClass(LPCTSTR szClassName)
 	ATOM ant = RegisterClass( &wc );
 	if( ant == NULL )
 	{
-		TRACE(_T("CDirChangeNotification::RegisterWindowClass - RegisterClass failed: %d\n"), GetLastError());
+		printf(_T("CDirChangeNotification::RegisterWindowClass - RegisterClass failed: %d\n"), GetLastError());
 	}
 	return (BOOL)(ant!= NULL);
 	
@@ -304,8 +306,8 @@ BOOL CDelayedNotificationWindow::CreateNotificationWindow()
 							GetInstanceHandle(), NULL);
 	if( s_hWnd == NULL )
 	{
-		TRACE(_T("Unable to create notification window! GetLastError(): %d\n"), GetLastError());
-		TRACE(_T("File: %s Line: %d\n"), _T(__FILE__), __LINE__);
+		printf(_T("Unable to create notification window! GetLastError(): %d\n"), GetLastError());
+		printf(_T("File: %s Line: %d\n"), _T(__FILE__), __LINE__);
 	}
 	
 	return (BOOL)(s_hWnd != NULL);
@@ -371,13 +373,13 @@ void CDelayedNotificationThread::PostNotification(CDirChangeNotification * pNoti
 		//	continueing.  accomplished w/ an event... also.. posting a message to itself before signalling the 
 		//  'spawning' thread that it was started ensured that there was a message pump
 		//  associated w/ the worker thread by the time PostThreadMessage was called.
-		TRACE(_T("PostThreadMessage() failed while posting to thread id: %d! GetLastError(): %d%s\n"), s_dwThreadID, GetLastError(), GetLastError() == ERROR_INVALID_THREAD_ID? _T("(ERROR_INVALID_THREAD_ID)") : _T(""));
+		printf(_T("PostThreadMessage() failed while posting to thread id: %d! GetLastError(): %d%s\n"), s_dwThreadID, GetLastError(), GetLastError() == ERROR_INVALID_THREAD_ID? _T("(ERROR_INVALID_THREAD_ID)") : _T(""));
 	}
 }
 
 bool CDelayedNotificationThread::StartThread()
 {
-	TRACE(_T("CDelayedNotificationThread::StartThread()\n"));
+	printf(_T("CDelayedNotificationThread::StartThread()\n"));
 	ASSERT( s_hThread == NULL 
 		&&	s_dwThreadID == 0 );
 	s_hThread = (HANDLE)_beginthreadex(NULL,0, 
@@ -391,7 +393,7 @@ bool CDelayedNotificationThread::StartThread()
 
 bool CDelayedNotificationThread::StopThread()
 {
-	TRACE(_T("CDelayedNotificationThread::StopThread()\n"));
+	printf(_T("CDelayedNotificationThread::StopThread()\n"));
 	if( s_hThread != NULL 
 	&&	s_dwThreadID != 0 )
 	{
@@ -431,7 +433,7 @@ UINT __stdcall CDelayedNotificationThread::ThreadFunc(LPVOID lpvThis)
 	//
 	if( pThis ) pThis->SignalThreadStartup();
 
-	TRACE(_T("CDelayedNotificationThread::ThreadFunc() ThreadID: %d -- Starting\n"), GetCurrentThreadId());
+	printf(_T("CDelayedNotificationThread::ThreadFunc() ThreadID: %d -- Starting\n"), GetCurrentThreadId());
 	MSG msg;
 	do{
 		while( GetMessage(&msg, NULL, 0,0) )//note GetMessage() can return -1, but only if i give it a bad HWND.(HWND for another thread for example)..i'm not giving an HWND, so no problemo here.
@@ -454,7 +456,7 @@ UINT __stdcall CDelayedNotificationThread::ThreadFunc(LPVOID lpvThis)
 				//			and the change handler object was deleted before the notification could be dispatched to this function.
 				//
 				//		* Somebody's implementation of an overridden virtual function caused an exception
-				TRACE(_T("The following exception occurred: %d -- File: %s Line: %d\n"), dwEx, _T(__FILE__), __LINE__);
+				printf(_T("The following exception occurred: %d -- File: %s Line: %d\n"), dwEx, _T(__FILE__), __LINE__);
 				}
 			}
 			else
@@ -464,7 +466,7 @@ UINT __stdcall CDelayedNotificationThread::ThreadFunc(LPVOID lpvThis)
 			}
 		}
 	}while( msg.message != WM_QUIT );
-	TRACE(_T("CDelayedNotificationThread::ThreadFunc() exiting. ThreadID: %d\n"), GetCurrentThreadId());
+	printf(_T("CDelayedNotificationThread::ThreadFunc() exiting. ThreadID: %d\n"), GetCurrentThreadId());
 	return 0;
 }
 
@@ -1328,7 +1330,7 @@ BOOL CDelayedDirectoryChangeHandler::WaitForOnWatchStoppedDispatched( )
 				dwWait	= WaitForSingleObject(m_hWatchStoppedDispatchedEvent, 5000);//wait five seconds
 				if( dwWait != WAIT_OBJECT_0 )
 				{
-					TRACE(_T("WARNING: Possible Deadlock detected! ThreadID: %d File: %s Line: %d\n"), GetCurrentThreadId(), _T(__FILE__), __LINE__);
+					printf(_T("WARNING: Possible Deadlock detected! ThreadID: %d File: %s Line: %d\n"), GetCurrentThreadId(), _T(__FILE__), __LINE__);
 				}
 			}while( dwWait != WAIT_OBJECT_0 );
 		}
@@ -1379,7 +1381,7 @@ BOOL CDelayedDirectoryChangeHandler::WaitForOnWatchStoppedDispatched( )
 					}break;
 				case WAIT_TIMEOUT:
 					{
-						TRACE(_T("WARNING: Possible Deadlock detected! ThreadID: %d File: %s Line: %d\n"), GetCurrentThreadId(), _T(__FILE__), __LINE__);
+						printf(_T("WARNING: Possible Deadlock detected! ThreadID: %d File: %s Line: %d\n"), GetCurrentThreadId(), _T(__FILE__), __LINE__);
 					}break;
 				}
 			}while( dwWait != WAIT_OBJECT_0 );
@@ -1389,9 +1391,9 @@ BOOL CDelayedDirectoryChangeHandler::WaitForOnWatchStoppedDispatched( )
 	}
 	else
 	{
-		TRACE(_T("WARNING: Unable to wait for notification that the On_WatchStopped function has been dispatched to another thread.\n"));
-		TRACE(_T("An Exception may occur shortly.\n"));
-		TRACE(_T("File: %s Line: %d"), _T( __FILE__ ), __LINE__);
+		printf(_T("WARNING: Unable to wait for notification that the On_WatchStopped function has been dispatched to another thread.\n"));
+		printf(_T("An Exception may occur shortly.\n"));
+		printf(_T("File: %s Line: %d"), _T( __FILE__ ), __LINE__);
 	
 	}
 

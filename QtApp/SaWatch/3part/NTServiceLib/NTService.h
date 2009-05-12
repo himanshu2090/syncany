@@ -180,11 +180,11 @@ public:
 
 // 自动连接NTServiceLib
 #ifdef _DEBUG
-	#pragma comment(lib, "NTServiceLibDebug.lib") 
-	#pragma message("Automatically linking with NTServiceLibDebug.lib")
+	//#pragma comment(lib, "NTServiceLibDebug.lib") 
+	//#pragma message("Automatically linking with NTServiceLibDebug.lib")
 #else
-	#pragma comment(lib, "NTServiceLib.lib") 
-	#pragma message("Automatically linking with NTServiceLib.lib")
+	//#pragma comment(lib, "NTServiceLib.lib") 
+	//#pragma message("Automatically linking with NTServiceLib.lib")
 #endif
 
 #endif // _NTSERVICE_H_
