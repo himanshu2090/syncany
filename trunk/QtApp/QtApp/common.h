@@ -25,20 +25,37 @@
 #define KEY_REASON "reason"
 #define KEY_SERVER_IP "serverip"
 #define KEY_SERVER_PORT "serverport"
+#define KEY_SESSION_ID "session"
+#define KEY_DEVICE_ID "deviceid"
 
-
-
+//同步方向
+enum SYNC_DIR_LIST
+{
+	SYNC_TO_SERVER=1,
+	SYNC_FROM_SERVER
+};
+//同步操作列表
+enum SYNC_OP_LIST
+{
+	SYNC_OP_ADD=1,
+	SYNC_OP_REMOVE,
+	SYNC_OP_MODIFY,
+	SYNC_OP_RENAME
+};
 //常用ALERT 的type
-#define ALERT_TYPESTR_SIGNUP "signup"
-#define ALERT_TYPESTR_SINGLE_CHOICE "singlechoice"
-#define ALERT_TYPESTR_MULTI_CHOICE "mutilchoice"
-#define ALERT_TYPESTR_INPUT "input"
-#define ALERT_TYPESTR_REDIRECT "redirect" 
+#define ALERT_TYPESTR_SIGNUP	"signup"
+#define ALERT_TYPESTR_SINGLE_CHOICE	"singlechoice"
+#define ALERT_TYPESTR_MULTI_CHOICE	"mutilchoice"
+#define ALERT_TYPESTR_INPUT		"input"
+#define ALERT_TYPESTR_REDIRECT	"redirect" 
+#define ALERT_TYPESTR_NOTIFY	"notify"
+#define ALERT_NOTIFY_KEY_ACTIONTYPE "action_type"
 //错误码列表
 enum ERROR_CODE_LIST
 {
 	ERR_NONE=0,
 	ERR_UNKNOWN,
+	ERR_NODATA,
 	ERR_NETWORK_CONNECT_FAIL,
 	ERR_NETWORK_SEND_FAIL,
 	ERR_NOT_SUPPORT,
@@ -154,10 +171,9 @@ inline const char * get_cmdstr(int nCmdType)
 
 typedef QMap<QString,QString> CommandMap;
 
-static unsigned char hexchars[] = "0123456789ABCDEF";
 
-QByteArray raw_url_decode(QByteArray &str);
-QByteArray raw_url_encode(QByteArray &str);
+QByteArray raw_url_decode(QByteArray str);
+QByteArray raw_url_encode(QByteArray str);
 
 //将map转换为命令行
 QString convert_to_cmdline(CommandMap props);
@@ -172,7 +188,6 @@ class IFile:public QObject
 {
 public:
 	IFile(QObject *parent=null):QObject(parent){}
-
 	virtual QByteArray getData()=0;//获取内容
 	virtual QDateTime getLastModifyTime()=0; //最后修改时间
 	virtual QDateTime getAnchorTime()=0;
@@ -214,8 +229,6 @@ public:
 signals:
 	void alert(QString strFile);
 };
-
-
 typedef QPointer<IDevice> PtrDevice;
 
 //根据类型信息串，创建相应的对象

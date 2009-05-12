@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EventListDlgClass</class>
+ <widget class="QDialog" name="EventListDlgClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>508</width>
+    <height>150</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>EventListDlg</string>
+  </property>
+  <widget class="QTreeWidget" name="listWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>491</width>
+     <height>131</height>
+    </rect>
+   </property>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>listWidget</sender>
+   <signal>itemClicked(QTreeWidgetItem*)</signal>
+   <receiver>EventListDlgClass</receiver>
+   <slot>itemClicked(QTreeWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>255</x>
+     <y>75</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>253</x>
+     <y>74</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>listWidget</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*)</signal>
+   <receiver>EventListDlgClass</receiver>
+   <slot>itemDoubleClicked(QTreeWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>255</x>
+     <y>75</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>253</x>
+     <y>74</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>listWidget</sender>
+   <signal>itemEntered(QTreeWidgetItem*)</signal>
+   <receiver>EventListDlgClass</receiver>
+   <slot>itemEntered(QTreeWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>255</x>
+     <y>75</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>253</x>
+     <y>74</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>listWidget</sender>
+   <signal>itemPressed(QTreeWidgetItem*)</signal>
+   <receiver>EventListDlgClass</receiver>
+   <slot>itemPressed(QTreeWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>255</x>
+     <y>75</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>253</x>
+     <y>74</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>itemClicked(QTreeWidgetItem*)</slot>
+  <slot>itemDoubleClicked(QTreeWidgetItem*)</slot>
+  <slot>itemEntered(QTreeWidgetItem*)</slot>
+  <slot>itemPressed(QTreeWidgetItem*)</slot>
+ </slots>
+</ui>

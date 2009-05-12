@@ -15,32 +15,62 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_105C4B6902C4F02A861C3D380B46F9A7"
+        "OwnerKey" = "8:_1E27AA44CD1044239C01112050A3F1D0"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_144937AC5A0544B387C5BD312C9C00F8"
+        "OwnerKey" = "8:_15FD127F9344436F8CF04C4151B4A421"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_15FD127F9344436F8CF04C4151B4A421"
+        "OwnerKey" = "8:_EFEAE7FAA0CF4092927D5DA11FEAB622"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_1E27AA44CD1044239C01112050A3F1D0"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_2B22C04B291B10B90D06344FBC78B6BB"
+        "MsmKey" = "8:_2A67637CF4314FC7B33E8FD44C4EAD4A"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_88B38A32BAC842A98B6CCCC125FC0268"
+        "OwnerKey" = "8:_EFEAE7FAA0CF4092927D5DA11FEAB622"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_908260A68EA34FDCB8948D6E9BCA000A"
+        "OwnerKey" = "8:_CF87D07B742941B0A50C3EFD5CA0A1EA"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_97BBAAF1C75E96C6BE33CF43B55F1390"
         "OwnerKey" = "8:_1E27AA44CD1044239C01112050A3F1D0"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_7E5E047EA4462676F483E7BE17FF3E33"
-        "OwnerKey" = "8:_1E27AA44CD1044239C01112050A3F1D0"
+        "MsmKey" = "8:_A024C2A3DDF64AF39EBDA9A7D72A7C0A"
+        "OwnerKey" = "8:_88B38A32BAC842A98B6CCCC125FC0268"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_A76223D095F141BABB70085DFEFD80CB"
+        "MsmKey" = "8:_B2063A36B5BD7DD99BBAE4DC00EEB595"
         "OwnerKey" = "8:_1E27AA44CD1044239C01112050A3F1D0"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_CDEBA8B8EA114B15A120D71D3377463C"
-        "OwnerKey" = "8:_A76223D095F141BABB70085DFEFD80CB"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -51,8 +81,26 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_FF431B7DDE4038F2D649769379A656D6"
+        "MsmKey" = "8:_CF87D07B742941B0A50C3EFD5CA0A1EA"
         "OwnerKey" = "8:_1E27AA44CD1044239C01112050A3F1D0"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_D7872105A7DF4B1C867B00CB9889FC55"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E32030AAEE9046AB95405BFAC907D258"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_EFEAE7FAA0CF4092927D5DA11FEAB622"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -142,7 +190,7 @@
         }
         "File"
         {
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2B22C04B291B10B90D06344FBC78B6BB"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_105C4B6902C4F02A861C3D380B46F9A7"
             {
             "SourcePath" = "8:QtGuid4.dll"
             "TargetName" = "8:QtGuid4.dll"
@@ -162,7 +210,47 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7E5E047EA4462676F483E7BE17FF3E33"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2A67637CF4314FC7B33E8FD44C4EAD4A"
+            {
+            "SourcePath" = "8:..\\SaWatch\\bin\\SaWatch.dat"
+            "TargetName" = "8:SaWatch.dat"
+            "Tag" = "8:"
+            "Folder" = "8:_9FCA1021B3704A59ADEFFDFC36A07051"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_97BBAAF1C75E96C6BE33CF43B55F1390"
+            {
+            "SourcePath" = "8:QtCored4.dll"
+            "TargetName" = "8:QtCored4.dll"
+            "Tag" = "8:"
+            "Folder" = "8:_9FCA1021B3704A59ADEFFDFC36A07051"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B2063A36B5BD7DD99BBAE4DC00EEB595"
             {
             "SourcePath" = "8:QtNetworkd4.dll"
             "TargetName" = "8:QtNetworkd4.dll"
@@ -202,10 +290,10 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FF431B7DDE4038F2D649769379A656D6"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D7872105A7DF4B1C867B00CB9889FC55"
             {
-            "SourcePath" = "8:QtCored4.dll"
-            "TargetName" = "8:QtCored4.dll"
+            "SourcePath" = "8:..\\SaWatch\\bin\\Sqlite3.dll"
+            "TargetName" = "8:Sqlite3.dll"
             "Tag" = "8:"
             "Folder" = "8:_9FCA1021B3704A59ADEFFDFC36A07051"
             "Condition" = "8:"
@@ -219,7 +307,27 @@
             "PackageAs" = "3:1"
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E32030AAEE9046AB95405BFAC907D258"
+            {
+            "SourcePath" = "8:..\\SaWatch\\bin\\SaWatch.exe"
+            "TargetName" = "8:SaWatch.exe"
+            "Tag" = "8:"
+            "Folder" = "8:_9FCA1021B3704A59ADEFFDFC36A07051"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
         }
@@ -833,11 +941,11 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_A76223D095F141BABB70085DFEFD80CB"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_144937AC5A0544B387C5BD312C9C00F8"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:policy_9_0_Microsoft_VC90_DebugCRT_x86.msm"
+            "SourcePath" = "8:microsoft_vc90_crt_x86.msm"
                 "Properties"
                 {
                 }
@@ -847,11 +955,67 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_CDEBA8B8EA114B15A120D71D3377463C"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_15FD127F9344436F8CF04C4151B4A421"
+            {
+            "UseDynamicProperties" = "11:TRUE"
+            "IsDependency" = "11:TRUE"
+            "SourcePath" = "8:policy_9_0_Microsoft_VC90_CRT_x86.msm"
+                "Properties"
+                {
+                }
+            "LanguageId" = "3:0"
+            "Exclude" = "11:FALSE"
+            "Folder" = "8:"
+            "Feature" = "8:"
+            "IsolateTo" = "8:"
+            }
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_88B38A32BAC842A98B6CCCC125FC0268"
+            {
+            "UseDynamicProperties" = "11:TRUE"
+            "IsDependency" = "11:TRUE"
+            "SourcePath" = "8:policy_9_0_Microsoft_VC90_MFC_x86.msm"
+                "Properties"
+                {
+                }
+            "LanguageId" = "3:0"
+            "Exclude" = "11:FALSE"
+            "Folder" = "8:"
+            "Feature" = "8:"
+            "IsolateTo" = "8:"
+            }
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_908260A68EA34FDCB8948D6E9BCA000A"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
             "SourcePath" = "8:microsoft_vc90_debugcrt_x86.msm"
+                "Properties"
+                {
+                }
+            "LanguageId" = "3:0"
+            "Exclude" = "11:FALSE"
+            "Folder" = "8:"
+            "Feature" = "8:"
+            "IsolateTo" = "8:"
+            }
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_A024C2A3DDF64AF39EBDA9A7D72A7C0A"
+            {
+            "UseDynamicProperties" = "11:TRUE"
+            "IsDependency" = "11:TRUE"
+            "SourcePath" = "8:microsoft_vc90_mfc_x86.msm"
+                "Properties"
+                {
+                }
+            "LanguageId" = "3:0"
+            "Exclude" = "11:FALSE"
+            "Folder" = "8:"
+            "Feature" = "8:"
+            "IsolateTo" = "8:"
+            }
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_CF87D07B742941B0A50C3EFD5CA0A1EA"
+            {
+            "UseDynamicProperties" = "11:TRUE"
+            "IsDependency" = "11:TRUE"
+            "SourcePath" = "8:policy_9_0_Microsoft_VC90_DebugCRT_x86.msm"
                 "Properties"
                 {
                 }
@@ -887,6 +1051,34 @@
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{4FEF68BC-ABCE-44EA-B7AF-69A58651DF13}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_EFEAE7FAA0CF4092927D5DA11FEAB622"
+            {
+            "SourcePath" = "8:..\\SaWatch\\bin\\DWLib.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_9FCA1021B3704A59ADEFFDFC36A07051"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{A0F835E4-C46F-4CBB-928B-B0CBAAA7A64A}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {

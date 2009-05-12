@@ -5,10 +5,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QtApp", "QtApp\QtApp.vcproj
 	GlobalSection(Qt) = preSolution
 		Integration = True
 	EndGlobalSection
+	ProjectSection(ProjectDependencies) = postProject
+		{A0F835E4-C46F-4CBB-928B-B0CBAAA7A64A} = {A0F835E4-C46F-4CBB-928B-B0CBAAA7A64A}
+	EndProjectSection
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SyncanySetup", "SyncanySetup\SyncanySetup.vdproj", "{4ACE4784-016E-478A-AAE9-86ECAD8A5951}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SaWatch", "SaWatch\SaWatch.vcproj", "{DA337831-302C-4855-9108-BC0FE82BE07C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DWLib", "SaWatch\DWLib.vcproj", "{A0F835E4-C46F-4CBB-928B-B0CBAAA7A64A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,10 +25,10 @@ Global
 		{4FEF68BC-ABCE-44EA-B7AF-69A58651DF13}.Release|Win32.Build.0 = Release|Win32
 		{4ACE4784-016E-478A-AAE9-86ECAD8A5951}.Debug|Win32.ActiveCfg = Debug
 		{4ACE4784-016E-478A-AAE9-86ECAD8A5951}.Release|Win32.ActiveCfg = Release
-		{DA337831-302C-4855-9108-BC0FE82BE07C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{DA337831-302C-4855-9108-BC0FE82BE07C}.Debug|Win32.Build.0 = Debug|Win32
-		{DA337831-302C-4855-9108-BC0FE82BE07C}.Release|Win32.ActiveCfg = Release|Win32
-		{DA337831-302C-4855-9108-BC0FE82BE07C}.Release|Win32.Build.0 = Release|Win32
+		{A0F835E4-C46F-4CBB-928B-B0CBAAA7A64A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A0F835E4-C46F-4CBB-928B-B0CBAAA7A64A}.Debug|Win32.Build.0 = Debug|Win32
+		{A0F835E4-C46F-4CBB-928B-B0CBAAA7A64A}.Release|Win32.ActiveCfg = Release|Win32
+		{A0F835E4-C46F-4CBB-928B-B0CBAAA7A64A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

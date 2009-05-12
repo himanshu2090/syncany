@@ -38,7 +38,7 @@ SyncDB *SyncDB::instance()
 ÃüÁî»ØÓ¦Ê±¼ä(end_time)
 
 CREATE TABLE [sqin] (
-[id] AUTOINC, 
+[id] AUTOINC DEFAULT 1, 
 [cmd_id] INT NOT NULL, 
 [tag] INT NOT NULL DEFAULT 0, 
 [cmd_str] VARCHAR NOT NULL, 
@@ -48,7 +48,7 @@ CREATE TABLE [sqin] (
 CONSTRAINT [sqlite_autoindex_sqin_1] PRIMARY KEY ([cmd_id]));
 
 CREATE TABLE [sqout] (
-[id] AUTOINC, 
+[id] AUTOINC DEFAULT 1, 
 [cmd_id] INT NOT NULL, 
 [tag] INT NOT NULL DEFAULT 0, 
 [cmd_str] VARCHAR NOT NULL, 
@@ -69,7 +69,7 @@ anchor_time Ãªµã¶ÔÓ¦µÄ×îºóÐÞ¸ÄÊ±¼ä£¬±¾µØ´æ´¢£¬ÔÚ¸üÐÂÃªµãÊ±¸üÐÂ
 modify_time ×îºóÐÞ¸ÄÊ±¼ä
 
 CREATE TABLE [sync_files] (
-[fid] AUTOINC, 
+[fid] AUTOINC DEFAULT 1, 
 [url_local] VARCHAR NOT NULL, 
 [filename] VARCHAR , 
 [filesize] INT , 
@@ -81,38 +81,40 @@ CONSTRAINT [sqlite_autoindex_sync_files_url_local] PRIMARY KEY ([url_local]));
 
 void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊýÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀýÇ°ÒÑ¾­¼ÓËø
 {
-	QString strTableName=strQueueTableName[QUEUE_IN];
+        QString strTableName=TABLE_SQIN;
 	if(!m_db.tableExists(strTableName.toStdString().c_str()))
 	{
 		QString strSql;
 		strSql+="CREATE TABLE [";
 		strSql+=strTableName+"] (\n"
-			"[id] AUTOINC, \n"
+			"[id]  INTEGER PRIMARY KEY AUTOINCREMENT , \n"
 			"[cmd_id] INT NOT NULL, \n"
 			"[tag] INT NOT NULL DEFAULT 0, \n"
 			"[cmd_str] VARCHAR NOT NULL, \n"
 			"[cmd_ret] VARCHAR, \n"
 			"[create_time] DATETIME,\n"
 			"[send_time] DATETIME, \n"
-			"[end_time] DATETIME, \n"
-			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_1] PRIMARY KEY ([cmd_id]));\n";
+			"[end_time] DATETIME);";
+		m_db.execDML(strSql.toStdString().c_str());
+		strSql="CREATE UNIQUE INDEX ["+strTableName+"_cmd_id] ON ["+strTableName+"] ([cmd_id]);";
 		m_db.execDML(strSql.toStdString().c_str());
 	}
-	strTableName=strQueueTableName[QUEUE_OUT];
+        strTableName=TABLE_SQOUT;
 	if(!m_db.tableExists(strTableName.toStdString().c_str()))
 	{
 		QString strSql;
 		strSql+="CREATE TABLE [";
 		strSql+=strTableName+"] (\n"
-			"[id] AUTOINC, \n"
+			"[id]  INTEGER PRIMARY KEY AUTOINCREMENT , \n"
 			"[cmd_id] INT NOT NULL, \n"
 			"[tag] INT NOT NULL DEFAULT 0, \n"
 			"[cmd_str] VARCHAR NOT NULL, \n"
 			"[cmd_ret] VARCHAR, \n"
 			"[create_time] DATETIME,\n"
 			"[send_time] DATETIME, \n"
-			"[end_time] DATETIME, \n"
-			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_1] PRIMARY KEY ([cmd_id]));\n";
+			"[end_time] DATETIME);\n";
+		m_db.execDML(strSql.toStdString().c_str());
+		strSql="CREATE UNIQUE INDEX ["+strTableName+"_cmd_id] ON ["+strTableName+"] ([cmd_id]);";
 		m_db.execDML(strSql.toStdString().c_str());
 	}
 	
@@ -122,7 +124,7 @@ void SyncDB::createTable() //ÔÚ¹¹Ôìº¯ÊýÀïµ÷ÓÃ£¬Î´¼ÓËø£¬ÒòÎªÔÚ´´½¨µ¥ÌåÊµÀýÇ°ÒÑ¾­¼
 int SyncDB::cmd_put(QString strCmdID,QString strCmdStr,QUEUE_ID nQueue)
 {
 	QString strSql="insert into [%1] (cmd_id,tag,cmd_str,create_time) values (%2,%3,'%4',datetime('now'))";
-	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID).arg(TAG_UNSEND).arg(strCmdStr));
+        return execSql(strSql.arg( nQueue==QUEUE_IN ? TABLE_SQIN : TABLE_SQOUT ).arg(strCmdID).arg(TAG_UNSEND).arg(strCmdStr));
 }
 
 int SyncDB::cmd_tag(QString strCmdID,int tag,QString strCmdRet,QUEUE_ID nQueue)
@@ -140,13 +142,13 @@ int SyncDB::cmd_tag(QString strCmdID,int tag,QString strCmdRet,QUEUE_ID nQueue)
 		strTime=",end_time=datetime('now')";
 	}
 	QString strSql="update [%1] set tag=%2%5,cmd_ret='%3' where cmd_id=%4";
-	return execSql(strSql.arg(strQueueTableName[nQueue]).arg(tag).arg(strCmdRet).arg(strCmdID).arg(strTime));
+        return execSql(strSql.arg( nQueue==QUEUE_IN ? TABLE_SQIN : TABLE_SQOUT).arg(tag).arg(strCmdRet).arg(strCmdID).arg(strTime));
 }
 
 bool SyncDB::cmd_exist(QString strCmdID,QUEUE_ID nQueue)
 {
 	QString strSql="select count(*) as cnt from %1 where cmd_id=%2";
-	CppSQLite3Query result=querySql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID));
+        CppSQLite3Query result=querySql(strSql.arg( nQueue==QUEUE_IN ? TABLE_SQIN : TABLE_SQOUT).arg(strCmdID));
 	if(!result.eof())
 	{
 		if(!result.fieldIsNull(0))
@@ -162,7 +164,7 @@ CommandMap SyncDB::cmd_get(QString strCmdID,QUEUE_ID nQueue)
 	CommandMap props;
 	QString strSql;
 	strSql="select cmd_str from %1 where cmd_id=%2 limit 1";
-	CppSQLite3Query result=querySql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID));
+        CppSQLite3Query result=querySql(strSql.arg( nQueue==QUEUE_IN ? TABLE_SQIN : TABLE_SQOUT).arg(strCmdID));
 	if(!result.eof())
 	{
 		if(!result.fieldIsNull(0))
@@ -179,7 +181,7 @@ CommandMap SyncDB::cmd_get_ret(QString strCmdID,QUEUE_ID nQueue)
 	CommandMap props;
 	QString strSql;
 	strSql="select cmd_ret from %1 where cmd_id=%2 limit 1";
-	CppSQLite3Query result=querySql(strSql.arg(strQueueTableName[nQueue]).arg(strCmdID));
+        CppSQLite3Query result=querySql(strSql.arg( nQueue==QUEUE_IN ? TABLE_SQIN : TABLE_SQOUT).arg(strCmdID));
 	if(!result.eof())
 	{
 		if(!result.fieldIsNull(0))
@@ -193,10 +195,10 @@ int SyncDB::cmd_reset_queue()
 {
 	QString strSql;
 	strSql="update [%1] set tag=%2 where tag=%3 and cmd_str like '%4%'";
-	execSql(strSql.arg(strQueueTableName[QUEUE_OUT]).arg(TAG_ABANDON).arg(TAG_SENDING).arg(get_cmdstr(CMD_HELLO)));
+        execSql(strSql.arg(TABLE_SQOUT).arg(TAG_ABANDON).arg(TAG_SENDING).arg(get_cmdstr(CMD_HELLO)));
 	strSql="update [%1] set tag=%2 where tag=%3";
-	int ret = execSql(strSql.arg(strQueueTableName[QUEUE_OUT]).arg(TAG_UNSEND).arg(TAG_SENDING)) +
-	execSql(strSql.arg(strQueueTableName[QUEUE_IN]).arg(TAG_UNSEND).arg(TAG_SENDING));
+        int ret = execSql(strSql.arg(TABLE_SQOUT).arg(TAG_UNSEND).arg(TAG_SENDING)) +
+        execSql(strSql.arg(TABLE_SQIN).arg(TAG_UNSEND).arg(TAG_SENDING));
 	return ret;
 }
 

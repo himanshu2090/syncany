@@ -46,4 +46,5 @@ int main(int argc, char *argv[])
 	{
 		qDebug("进程发生异常，崩溃退出\n");
 	}
+        return ERR_NONE;
 }

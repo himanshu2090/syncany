@@ -10,7 +10,13 @@ HEADERS += ./client.h \
     ./syncdb.h \
     ./synconf.h \
     sessionmanager.h \
-    localfilewatcher.h
+    localfilewatcher.h \
+    syncbasefile.h \
+    syncbasedir.h \
+    optiondlg.h \
+    itraymessage.h \
+    eventlistdlg.h \
+    EventList.h
 
 # Source files
 SOURCES += ./client.cpp \
@@ -21,10 +27,19 @@ SOURCES += ./client.cpp \
     ./syncdb.cpp \
     ./synconf.cpp \
     sessionmanager.cpp \
-    localfilewatcher.cpp
+    localfilewatcher.cpp \
+    syncbasefile.cpp \
+    syncbasedir.cpp \
+    optiondlg.cpp \
+    itraymessage.cpp \
+    eventlistdlg.cpp \
+    EventList.cpp \
+    common.cpp
 
 # Forms
-FORMS += ./qtapp.ui
+FORMS += ./qtapp.ui \
+    optiondlg.ui \
+    eventlistdlg.ui
 
 # Resource file(s)
 RESOURCES += ./qtapp.qrc

@@ -4,7 +4,8 @@
 #include "common.h"
 #include "synconf.h"
 #include "syncdb.h"
-class LocalFileWatcher : public QObject
+#include "itraymessage.h"
+class LocalFileWatcher : public ITrayMessage
 {
 	Q_OBJECT
 
@@ -23,10 +24,6 @@ private:
 public:
 	static QString local2url(QString);
 
-signals:
-	void filesChanged(QStringList &strFiles);
-	void filesAdded(QStringList &strFiles);
-	void filesRemoved(QStringList &strFiles);
 private slots:
 	void heartbeat();
 };

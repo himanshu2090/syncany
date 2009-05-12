@@ -2,12 +2,12 @@
 #include "syncbasefile.h"
 
 SessionManager::SessionManager(QObject *parent)
-	: QObject(parent)
-	,heartbeat_count(0)
-	,bAutoConnectHost(false)//²»×Ô¶¯Á¬½Ó
-	,client(this)
-	,ping_cl(null)
+	: ITrayMessage(parent)
+        ,bAutoConnectHost(false)//²»×Ô¶¯Á¬½Ó
+        ,heartbeat_count(0)
 	,ping_cmdid(0)
+        ,ping_cl(null)
+        ,client(this)
 {
 	try
 	{
@@ -116,6 +116,7 @@ void SessionManager::heartbeat()
 	{
 		//³¬Ê±£¬ÐèÒªÖØÐÂÁ¬½ÓÁË
 		QString strLog=QString::fromLocal8Bit("ÉÏ´ÎÓ¦´ðping°ü£º")+ping_acktime.toString()+QString::fromLocal8Bit(" µ±Ç°Ê±¼ä£º")+qtm.toString();
+		update_ping_acktime();
 		qDebug(strLog.toLocal8Bit().data());
 		emit sigLogger(strLog);
 		ping_cl=null;
@@ -144,7 +145,6 @@ void SessionManager::heartbeat()
 void SessionManager::client_connected(Client *cl)
 {
 	ping_cl=cl;
-	ping_acktime=QDateTime::currentDateTime();
 	say_hello(ping_cl);
 }
 
@@ -171,6 +171,7 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 	QString str=QString::fromLocal8Bit("ÊÕµ½ÃüÁî£º%1");
 	str=str.arg(strCmdLine);
 	
+	update_ping_acktime();
 	emit sigLogger(str);
 
 
@@ -183,6 +184,11 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 	}
 	if(!buffer.isNull() && buffer.length()>0)
 	{
+		//TODO£ºÈç¹ûÊÇÑ¹ËõÊý¾Ý£¬Ó¦¸ÃÔÚÕâÀï½â¿ª
+		if(props.find("zip")!=props.end())
+		{
+			buffer=qUncompress(buffer);
+		}
 		QString strTempFile=strTempDirectory+((nCmdType != CMD_STATE )?"/in/":"/out/");
 		QDir().mkpath(strTempFile);
 		strTempFile+=props["1"]+".tmp";
@@ -220,12 +226,13 @@ void SessionManager::recv_data(Client *cl,quint32 nCmdID,QString strCmdStr,QStri
 		{
 			cmd_waiter.removeOne(props["1"]);
 		}
-		if(props["1"].toInt()==ping_cmdid)
-		{
-			ping_acktime=QDateTime::currentDateTime();
-			emit sigLogger("ping ack @"+ping_acktime.toString());
-			return ;
-		}
+		//Ö»ÒªÓÐÊý¾Ý·µ»Ø£¬pingÃüÁî¿ÉÒÔÔÝÊ±²»·¢ËÍ
+		//if(props["1"].toInt()==ping_cmdid)
+		//{
+		//	ping_acktime=QDateTime::currentDateTime();
+		//	emit sigLogger("ping ack @"+ping_acktime.toString());
+		//	return ;
+		//}
 		if(syncdb->cmd_exist(props["1"],QUEUE_OUT))
 		{
 			CommandMap old_props=syncdb->cmd_get(props["1"],QUEUE_OUT);
@@ -250,12 +257,12 @@ int SessionManager::say_hello(Client *cl)
 	int ret=ERR_NONE;
 	//hello 101 syncany_client=2.1.0.0 protocol=1.0.1.0 platform=symbian-os-s60.3
 
-	QString strSessionID=synconf->getstr("session");
-	QString strDeviceID=synconf->getstr("deviceid");
+	QString strSessionID=synconf->getstr(KEY_SESSION_ID);
+	QString strDeviceID=synconf->getstr(KEY_DEVICE_ID);
 	if(strSessionID!="" && strDeviceID!="")
 	{
-		props["session"]=strSessionID;
-		props["deviceid"]=strDeviceID;
+		props[KEY_SESSION_ID]=strSessionID;
+		props[KEY_DEVICE_ID]=strDeviceID;
 	}
 	else
 	{
@@ -308,6 +315,13 @@ int SessionManager::say_hello(Client *cl)
 	//  
 	return ret;
 }
+
+void SessionManager::update_ping_acktime()
+{
+	ping_acktime=QDateTime::currentDateTime();
+	heartbeat_count=0;
+}
+
 
 int SessionManager::say_ping(Client *cl)
 {
@@ -371,7 +385,7 @@ void SessionManager::dispatch_task() //½«Î´Íê³ÉµÄÈÎÎñ·Ö·¨¸ø¿Í»§¶ËµÄÆäËûÄ£¿éÀ´Íê³
 {
 	while(true)
 	{
-		CommandMap cmdfields=syncdb->singleQuerySql(QString("select cmd_id,cmd_str,cmd_ret from ")+strQueueTableName[QUEUE_IN]+" where tag="+QString::number(TAG_UNSEND)+" limit 1");
+                CommandMap cmdfields=syncdb->singleQuerySql(QString("select cmd_id,cmd_str,cmd_ret from ")+TABLE_SQIN+" where tag="+QString::number(TAG_UNSEND)+" limit 1");
 		if(cmdfields.size()<1)
 			break;
 		CommandMap props=convert_from_cmdline(cmdfields["cmd_str"]);
@@ -390,7 +404,7 @@ void SessionManager::resend_cmd()//½«Î´·¢ËÍµÄÃüÁîÖØÐÂ·¢ËÍ
 {
 	while(true)
 	{
-		CommandMap cmdfields=syncdb->singleQuerySql(QString("select cmd_id,cmd_str,cmd_ret from ")+strQueueTableName[QUEUE_OUT]+" where tag="+QString::number(TAG_UNSEND)+" limit 1");
+                CommandMap cmdfields=syncdb->singleQuerySql(QString("select cmd_id,cmd_str,cmd_ret from ")+TABLE_SQOUT+" where tag="+QString::number(TAG_UNSEND)+" limit 1");
 		if(cmdfields.size()<1)
 			break;
 		CommandMap props=convert_from_cmdline(cmdfields["cmd_str"]);
@@ -410,7 +424,7 @@ int SessionManager::do_job(Client *cl,CommandMap props,QByteArray data)
 {
 	QMutexLocker locker(&m_locker);
 
-	int nCmdID=props["1"].toInt();
+        //int nCmdID=props["1"].toInt();
 	syncdb->cmd_tag(props["1"],TAG_SENDING,"",QUEUE_IN);
 	int nCmdType=get_cmdtype(props["0"].toStdString().c_str());
 	switch(nCmdType)
@@ -443,8 +457,75 @@ int SessionManager::do_job(Client *cl,CommandMap props,QByteArray data)
 				CommandMap ack_props;
 				ack_props["1"]=props["1"];//»ØÓ¦µÄÃüÁîID
 				ack_props["2"]=QString::number(STA_OK);
-				if(ack_state(cl,ack_props)==ERR_NONE)
+				ack_state(cl,ack_props);
 				break;
+			}
+			if(props[KEY_TYPE]==ALERT_TYPESTR_NOTIFY)
+			{
+				QStringList dirs_update;
+				QStringList dirs_add;
+				QStringList dirs_remove;
+				QStringList dirs_rename_old;
+				QStringList dirs_rename_new;
+
+				//¶ÔALERTµÄÈ·ÈÏ½«Ó°Ïì¿Í»§¶ËµÄ×îºó°æ±¾ÐÅÏ¢£¡Ö»ÓÐÈ«²¿¶¼ÄÜ´¦ÀíµÄÇé¿ö£¬²Å·µ»Ø200£¬Ò²¿ÉÒÔ¸ù¾ÝÅäÖÃºÍ¾ßÌåÒµÎñµÄÇé¿ö·µ»Ø
+				QString strNotify=QString::fromLocal8Bit(data);
+				QStringList strLines=strNotify.split('\n');
+				int syncdir=SYNC_FROM_SERVER;
+				for(int i=0;i<strLines.size();++i)
+				{
+					/*
+					Îâ¾ùÆ½(81496140)  22:27:20
+					alert comid size=***
+					version=***  action_type=***  url=***
+					version=***  action_type=***  url=***
+
+					kunlun(111345)  22:28:37
+					type= ???
+					Îâ¾ùÆ½(81496140)  22:29:11
+					A ±íÊ¾add
+					M ±íÊ¾modify
+					D ±íÊ¾delete
+					*/
+					//TODOÈçºÎÃ°ÅÝ°æ±¾ÊôÐÔÄØ£¿
+					strLines[i].remove('\r');
+					int syncop;
+					CommandMap line_props=convert_from_cmdline(strLines[i]);
+					if(line_props[ALERT_NOTIFY_KEY_ACTIONTYPE]!="")
+					{
+						switch(line_props[ALERT_NOTIFY_KEY_ACTIONTYPE][0])
+						{
+						case 'A':
+							syncop=SYNC_OP_ADD;
+							dirs_add.append(line_props["url"]);
+							break;
+						case 'M':
+							syncop=SYNC_OP_MODIFY;
+							dirs_update.append(line_props["url"]);
+							break;
+						case 'D':
+							syncop=SYNC_OP_REMOVE;
+							dirs_remove.append(line_props["url"]);
+							break;
+						case 'N':
+							syncop=SYNC_OP_RENAME;
+							dirs_rename_old.append(line_props["url"]);
+							dirs_rename_new.append(line_props["newurl"]);
+							break;
+						default:
+							continue;
+						}
+					}
+				}
+
+				if(dirs_update.size()>0)
+					emit filesChanged(dirs_update);
+				if(dirs_add.size()>0)
+					emit filesAdded(dirs_add);
+				if(dirs_remove.size()>0)
+					emit filesRemoved(dirs_remove);
+				if(dirs_rename_new.size()>0)
+					emit filesRenamed(dirs_rename_old,dirs_rename_new);
 			}
 			emit sigLogger(QString::fromLocal8Bit("ÊÕµ½AlertÃüÁî£¬ÏòÉÏÃ°ÅÝÍ¨Öª£º")+convert_to_cmdline(props));
 		}
@@ -453,10 +534,10 @@ int SessionManager::do_job(Client *cl,CommandMap props,QByteArray data)
 		{
 			CommandMap ack_props;
 			ack_props["1"]=props["1"];//»ØÓ¦µÄÃüÁîID
-			ack_props["sessionid"]=synconf->getstr("session");
+			ack_props["sessionid"]=synconf->getstr(KEY_SESSION_ID);
 			ack_props["user"]=synconf->getstr("user_id");
 			ack_props["pwd"]=synconf->getstr("user_password");
-			ack_props["devuid"]=synconf->getstr("deviceid");
+			ack_props["devuid"]=synconf->getstr(KEY_DEVICE_ID);
 			if(ack_state(cl,ack_props)==ERR_NONE)
 			{
 				emit sigLogger("ack_whoareyou completed!");
@@ -492,42 +573,42 @@ int SessionManager::do_state(Client *cl,CommandMap state_props,CommandMap cmd_pr
 		{
 			if(state_props["2"].toInt()==STA_OK)
 			{
-				emit msgBox(tr("×¢²á³É¹¦"),"ÄãµÄÕÊºÅ"+synconf->getstr("user_id")+"³É¹¦×¢²á£¡");
-				synconf->setstr("session",state_props["session"]);
-				synconf->setstr("deviceid",state_props["deviceid"]);
+				emit trayMessage(tr("×¢²á³É¹¦"),"ÄãµÄÕÊºÅ"+synconf->getstr("user_id")+"³É¹¦×¢²á£¡");
+				synconf->setstr(KEY_SESSION_ID,state_props[KEY_SESSION_ID]);
+				synconf->setstr(KEY_DEVICE_ID,state_props[KEY_DEVICE_ID]);
 				synconf->setstr("doregister","",true);
 			}
 			else
 			{
 				QString strReason=state_props["reason"];
-				emit msgBox(tr("×¢²áÊ§°Ü"),"ÄãµÄÕÊºÅ"+synconf->getstr("user_id")+"×¢²áÊ§°Ü£¡´íÎó´úÂë["+state_props["2"]+"]£¡Ô­Òò£º["+strReason+"]");
+				emit trayMessage(tr("×¢²áÊ§°Ü"),"ÄãµÄÕÊºÅ"+synconf->getstr("user_id")+"×¢²áÊ§°Ü£¡´íÎó´úÂë["+state_props["2"]+"]£¡Ô­Òò£º["+strReason+"]");
 			}
 		}
 		return ERR_NONE;
 	}
 	if(cmd_props["0"]==get_cmdstr(CMD_HELLO))
 	{
-		if(cmd_props["user"]!="")
+		if(cmd_props["session"]!="")
 		{
 			if(state_props["2"].toInt()==STA_OK)
 			{
-				emit msgBox(tr("µÇÂ¼³É¹¦"),"ÄãµÄÕÊºÅ"+synconf->getstr("user_id")+"³É¹¦µÇÂ¼£¡");
-				if(state_props["session"]!="")
+				emit trayMessage(tr("µÇÂ¼³É¹¦"),"ÄãµÄÕÊºÅ"+synconf->getstr("user_id")+"³É¹¦µÇÂ¼£¡");
+				if(state_props[KEY_SESSION_ID]!="")
 				{
-					synconf->setstr("session",state_props["session"]);
-					synconf->setstr("deviceid",state_props["devviceid"],true);
+					synconf->setstr(KEY_SESSION_ID,state_props[KEY_SESSION_ID]);
+					synconf->setstr(KEY_DEVICE_ID,state_props[KEY_DEVICE_ID],true);
 				}
 			}
 			else
 			{				
 				QString strReason=state_props["reason"];
-				emit msgBox(tr("µÇÂ¼Ê§°Ü"),"ÄãµÄÕÊºÅ"+synconf->getstr("user_id")+"µÇÂ¼Ê§°Ü£¡´íÎó´úÂë["+state_props["2"]+"]£¡Ô­Òò£º["+strReason+"]");
+				emit trayMessage(tr("µÇÂ¼Ê§°Ü"),"ÄãµÄÕÊºÅ"+synconf->getstr("user_id")+"µÇÂ¼Ê§°Ü£¡´íÎó´úÂë["+state_props["2"]+"]£¡Ô­Òò£º["+strReason+"]");
 			}
 		}
 		else
 		{
 			QString strReason=state_props["reason"];
-			emit msgBox(tr("Á¬½Ó³É¹¦"),"Äã³É¹¦µÄÁ¬½Óµ½·þÎñÆ÷£¬µ«ÊÇÉÐÎ´µÇÂ¼£¡");
+			emit trayMessage(tr("Á¬½Ó³É¹¦"),"Äã³É¹¦µÄÁ¬½Óµ½·þÎñÆ÷£¬µ«ÊÇÉÐÎ´µÇÂ¼£¡");
 		}
 		return ERR_NONE;
 	}
@@ -620,7 +701,7 @@ quint32 SessionManager::put_file(PtrFile pf)
 {
 
 	if(ping_cl == null)
-		return -1;
+                return ERR_UNKNOWN;
 
 	QByteArray buf=pf->getData();
 
@@ -643,7 +724,7 @@ quint32 SessionManager::put_file(PtrFile pf)
 quint32 SessionManager::rm_file(PtrFile pf)
 {
 	if(ping_cl == null)
-		return -1;
+                return ERR_UNKNOWN;
 
 
 	CommandMap props;

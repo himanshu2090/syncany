@@ -83,7 +83,10 @@ void Synconf::init_default()//将有默认值但未设置的项设置为默认值
 QString Synconf::getstr(QString strKey,QString strDefault)//获取配置项内容
 {
 	if(m_config.find(strKey)==m_config.end())
+	{
+		m_config[strKey]=strDefault;
 		return strDefault;
+	}
 	return m_config[strKey];
 }
 
@@ -130,6 +133,8 @@ QString Synconf::getOsVersionString()
 		return "Windows CE 6.x";
 	case QSysInfo::WV_CE_based:
 		return "CE-based version of Windows";
+        default:
+                return "Unknown OS";
 	}
 #endif	
 	return "Unknown OS";

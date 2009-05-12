@@ -6,8 +6,9 @@
 #include "client.h"
 #include "syncdb.h"
 #include "synconf.h"
+#include "itraymessage.h"
 
-class SessionManager : public QObject
+class SessionManager : public ITrayMessage
 {
 	Q_OBJECT
 
@@ -19,7 +20,7 @@ public:
 	QString generate_cmdid();
 signals:
 	void sigLogger(QString);
-	void msgBox(QString ,QString );
+
 public slots:
 	void heartbeat();
 	void ConnectHost();
@@ -48,7 +49,7 @@ public:
 private:
 	void dispatch_task(); //将未完成的任务分法给客户端的其他模块来完成
 	void resend_cmd();//将未发送的命令重新发送
-
+	void update_ping_acktime();
 private:
 	bool bAutoConnectHost;
 	QString svrhost;
@@ -62,7 +63,7 @@ private:
 	QMutex m_locker_cmdid; //同步锁，控制cmdid的产生
 	int ping_cmdid;
 	QDateTime ping_acktime;
-	int timeout_secs;
+        quint32 timeout_secs;
 	Client *ping_cl;
 	QString strTempDirectory;
 

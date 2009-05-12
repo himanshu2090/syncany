@@ -1,4 +1,5 @@
 #include "syncbasefile.h"
+#include "synconf.h"
 /*
 文件同步表：
 filename	本地磁盘文件名（带全路径）
@@ -9,7 +10,7 @@ anchor_time 锚点对应的最后修改时间，本地存储，在更新锚点时更新
 modify_time 最后修改时间
 
 CREATE TABLE [sync_files] (
-[fid] AUTOINC, 
+[fid] AUTOINC DEFAULT 1, 
 [url] VARCHAR NOT NULL, 
 [filename] VARCHAR , 
 [filesize] INT , 
@@ -24,9 +25,9 @@ SyncBaseFile::SyncBaseFile(QObject *parent)
 	: IFile(parent)
 {
 	syncdb=SyncDB::instance();
-	pszTableName=strSyncTableName[SYNC_FILES];
+        pszTableName=TABLE_SYNC_FILES;
 
-	datasize=-1;
+        datasize=0;
 	url="";
 	filename="";
 	anchor=0;
@@ -41,21 +42,22 @@ void SyncBaseFile::createTable()
 {
 	//在这里添加需要初始化创建的表
 	SyncDB *syncdb=SyncDB::instance();
-	const char *pszTableName=strSyncTableName[SYNC_FILES];
+        const char *pszTableName=TABLE_SYNC_FILES;
 	QString strTableName=pszTableName;
 	if(!syncdb->tableExists(strTableName.toStdString().c_str()))
 	{
 		QString strSql;
 		strSql+="CREATE TABLE [";
 		strSql+=strTableName+"] (\n"
-			"[fid] AUTOINC, \n"
+			"[fid] INTEGER PRIMARY KEY AUTOINCREMENT , \n"
 			"[url] VARCHAR NOT NULL, \n"
 			"[filename] VARCHAR ,\n" 
 			"[filesize] INT , \n"
 			"[anchor] INT, \n"
 			"[anchor_time] DATETIME, \n"
-			"[modify_time] DATETIME,\n"
-			"CONSTRAINT [sqlite_autoindex_"+strTableName+"_url] PRIMARY KEY ([url]));\n";
+			"[modify_time] DATETIME)\n";
+		syncdb->execSql(strSql);
+		strSql="CREATE UNIQUE INDEX ["+strTableName+"_syncdir] ON ["+strTableName+"] ([url]);";
 		syncdb->execSql(strSql);
 	}
 }
@@ -202,10 +204,13 @@ PtrFile SyncBaseFile::getFileByUrl(QString strUrl)
 {
 	QString strSql="select * from sync_files where url='"+strUrl+"' limit 1";
 	CommandMap rs=SyncDB::instance()->singleQuerySql(strSql);
-	if(rs.size()==0)
-		return PtrFile();
 	PtrFile pf=new SyncBaseFile(null);
 	pf->setUrl(strUrl);
+	if(rs.size()==0)
+	{
+		pf->setLocalUrl(Synconf::instance()->getstr("sync_dir")+strUrl);
+		return pf;
+	}
 	pf->setLocalUrl(rs["filename"]);
 	quint32 i=rs["anchor"].toInt();
 	if(i>0)

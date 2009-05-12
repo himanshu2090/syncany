@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Console Application" 0x0103
 
-CFG=SaWatch - Win32 Debug
+CFG=SaWatch - Win32 DLL_SaWatch_Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,7 +13,7 @@ CFG=SaWatch - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "SaWatch.mak" CFG="SaWatch - Win32 Debug"
+!MESSAGE NMAKE /f "SaWatch.mak" CFG="SaWatch - Win32 DLL_SaWatch_Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -37,12 +37,13 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 2
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "Release"
+# PROP Output_Dir "bin"
 # PROP Intermediate_Dir "Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FD /c
+# SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x804 /d "NDEBUG" /d "_AFXDLL"
 # ADD RSC /l 0x804 /d "NDEBUG" /d "_AFXDLL"
 BSC32=bscmake.exe
@@ -50,7 +51,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386 /libpath:"3part/NTServiceLib/" /libpath:"bin/"
 
 !ELSEIF  "$(CFG)" == "SaWatch - Win32 Debug"
 
@@ -59,22 +60,23 @@ LINK32=link.exe
 # PROP BASE Output_Dir "SaWatch___Win32_Debug"
 # PROP BASE Intermediate_Dir "SaWatch___Win32_Debug"
 # PROP BASE Target_Dir ""
-# PROP Use_MFC 2
+# PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "SaWatch___Win32_Debug"
-# PROP Intermediate_Dir "SaWatch___Win32_Debug"
+# PROP Output_Dir "bin"
+# PROP Intermediate_Dir "Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "_AFXDLL" /FR /YX"StdAfx.h" /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR /FD /GZ /c
+# SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x804 /d "_DEBUG" /d "_AFXDLL"
-# ADD RSC /l 0x804 /d "_DEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x804 /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"3part/NTServiceLib/" /libpath:"bin/"
 
 !ENDIF 
 
@@ -85,14 +87,6 @@ LINK32=link.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
-# Begin Source File
-
-SOURCE=.\src\DelayedDirectoryChangeHandler.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\DirectoryChanges.cpp
-# End Source File
 # Begin Source File
 
 SOURCE=.\src\SaWatch.cpp
@@ -106,29 +100,13 @@ SOURCE=.\src\SaWatch.cpp
 !ENDIF 
 
 # End Source File
-# Begin Source File
-
-SOURCE=.\src\StdAfx.cpp
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\src\DelayedDirectoryChangeHandler.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\DirectoryChanges.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\SaWatch.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\StdAfx.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
