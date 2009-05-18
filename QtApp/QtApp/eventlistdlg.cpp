@@ -6,19 +6,19 @@ EventListDlg::EventListDlg(QWidget *parent,Qt::WindowFlags f)
 	synconf=Synconf::instance();
 	syncdb=SyncDB::instance();
 	el=EventList::instance();
-	//connect(ui.listWidget,SIGNAL(itemClicked ( QTreeWidgetItem * item )),this,SLOT(itemClicked ( QTreeWidgetItem * item )));
-	//connect(ui.listWidget,SIGNAL(itemDoubleClicked ( QTreeWidgetItem * item )),this,SLOT(itemDoubleClicked ( QTreeWidgetItem * item )));
-	//connect(ui.listWidget,SIGNAL(itemEntered ( QTreeWidgetItem * item )),this,SLOT(itemEntered ( QTreeWidgetItem * item )));
-	//connect(ui.listWidget,SIGNAL(itemPressed ( QTreeWidgetItem * item )),this,SLOT(itemPressed ( QTreeWidgetItem * item )));
 
 	ui.listWidget->setColumnCount(4);
 	QStringList strHeaders;
-	strHeaders.append("ID");
-	strHeaders.append("Url");
-	strHeaders.append("SyncDir");
-	strHeaders.append("SyncOp");
+	strHeaders.append(QObject::tr("ID"));
+	strHeaders.append(QObject::tr("Url"));
+	strHeaders.append(QObject::tr("SyncDir"));
+	strHeaders.append(QObject::tr("SyncOp"));
 	ui.listWidget->setHeaderLabels(strHeaders);
 
+	connect(ui.listWidget,SIGNAL(itemClicked ( QTreeWidgetItem *  ,int  )),this,SLOT(itemClicked ( QTreeWidgetItem *  ,int  )));
+	connect(ui.listWidget,SIGNAL(itemDoubleClicked ( QTreeWidgetItem *  ,int  )),this,SLOT(itemDoubleClicked ( QTreeWidgetItem *  ,int  )));
+	connect(ui.listWidget,SIGNAL(itemEntered ( QTreeWidgetItem *  ,int  )),this,SLOT(itemEntered ( QTreeWidgetItem *  ,int  )));
+	connect(ui.listWidget,SIGNAL(itemPressed ( QTreeWidgetItem *  ,int  )),this,SLOT(itemPressed ( QTreeWidgetItem *  ,int  )));
 }
 
 EventListDlg::~EventListDlg()
@@ -57,19 +57,19 @@ void EventListDlg::reload()
 }
 
 
-void EventListDlg::itemClicked ( QTreeWidgetItem * item )
+void EventListDlg::itemClicked ( QTreeWidgetItem * item  ,int col)
 {
 
 }
-void EventListDlg::itemDoubleClicked ( QTreeWidgetItem * item )
+void EventListDlg::itemDoubleClicked ( QTreeWidgetItem * item  ,int col)
 {
 
 }
-void EventListDlg::itemEntered ( QTreeWidgetItem * item )
+void EventListDlg::itemEntered ( QTreeWidgetItem * item  ,int col)
 {
 
 }
-void EventListDlg::itemPressed ( QTreeWidgetItem * item )
+void EventListDlg::itemPressed ( QTreeWidgetItem * item  ,int col)
 {
 
 }

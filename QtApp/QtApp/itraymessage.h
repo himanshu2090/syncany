@@ -13,11 +13,14 @@ public:
 signals:
 	void trayMessage(QString strTitle,QString strInfo);
 	void trayLog(QString strInfo);
+
+	void alertMessage(StringMap alert_props,AlertMessageList msglist);
+
 	//本地文件变化通知
-	void filesChanged(QStringList &strFiles);
-	void filesAdded(QStringList &strFiles);
-	void filesRemoved(QStringList &strFiles);
-	void filesRenamed(QStringList &strFiles,QStringList &strNewFiles);
+	//void filesChanged(QStringList &strFiles);
+	//void filesAdded(QStringList &strFiles);
+	//void filesRemoved(QStringList &strFiles);
+	//void filesRenamed(QStringList &strFiles,QStringList &strNewFiles);
 
 	//远程Alert事件
 private:

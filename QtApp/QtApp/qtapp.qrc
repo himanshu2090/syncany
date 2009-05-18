@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/QtApp" >
         <file>QtApp.ico</file>
+        <file>qtapp_zh.qm</file>
     </qresource>
 </RCC>

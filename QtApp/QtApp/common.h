@@ -18,21 +18,31 @@
 #endif
 
 //常用KEY=VALUE的KEY定义
+#define KEY_CMD "0"
+#define KEY_CMDID "1"
+#define KEY_STATECODE "2"
+
 #define KEY_USER "user"
 #define KEY_PASS "pass"
 #define KEY_URL "url"
+#define KEY_URL_NEW "new_url"
 #define KEY_TYPE "type"
 #define KEY_REASON "reason"
 #define KEY_SERVER_IP "serverip"
 #define KEY_SERVER_PORT "serverport"
 #define KEY_SESSION_ID "session"
 #define KEY_DEVICE_ID "deviceid"
+#define KEY_ACTION_TYPE "action_type"
+#define KEY_SENDER "sender"
+#define KEY_VERSION "version"
+#define KEY_SYNCDIR "syncdir"
+#define KEY_WORK_DIR "work_dir"
 
 //同步方向
 enum SYNC_DIR_LIST
 {
 	SYNC_TO_SERVER=1,
-	SYNC_FROM_SERVER
+	SYNC_FROM_SERVER=2,
 };
 //同步操作列表
 enum SYNC_OP_LIST
@@ -49,7 +59,6 @@ enum SYNC_OP_LIST
 #define ALERT_TYPESTR_INPUT		"input"
 #define ALERT_TYPESTR_REDIRECT	"redirect" 
 #define ALERT_TYPESTR_NOTIFY	"notify"
-#define ALERT_NOTIFY_KEY_ACTIONTYPE "action_type"
 //错误码列表
 enum ERROR_CODE_LIST
 {
@@ -169,8 +178,10 @@ inline const char * get_cmdstr(int nCmdType)
 
 }
 
-typedef QMap<QString,QString> CommandMap;
-
+typedef QMap<QString,QString> StringMap;
+typedef StringMap CommandMap;
+typedef StringMap AlertMessage;
+typedef QList<StringMap> AlertMessageList;
 
 QByteArray raw_url_decode(QByteArray str);
 QByteArray raw_url_encode(QByteArray str);
@@ -233,7 +244,7 @@ typedef QPointer<IDevice> PtrDevice;
 
 //根据类型信息串，创建相应的对象
 PtrFile createFileObject(QString strType);
-
+PtrFile getFileObjectByUrl(QString strUrl);
 #endif
 
 

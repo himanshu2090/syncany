@@ -97,7 +97,7 @@ quint32 EventList::insertEvent(PtrFile ptrfile,int syncdir,int syncop)
 		return syncdb->execSql(strSql);
 	}
 	else
-		emit trayMessage("发现冲突！",ptrfile->getUrl()+"与服务器版本冲突！");
+		emit trayMessage(QObject::tr("conflict!"),ptrfile->getUrl()+QObject::tr("conflict with server's copy!"));
 	return ret;
 }
 

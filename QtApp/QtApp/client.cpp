@@ -55,7 +55,7 @@ void Client::disconnected ()
 
 void Client::error ( QTcpSocket::SocketError socketError )
 {
-	emit sigLogger(QString("error:[%1][%2]").arg(socketError).arg(m_sock->errorString()));
+	emit sigLogger(QObject::tr("error:[%1][%2]").arg(socketError).arg(m_sock->errorString()));
 }
 
 void Client::hostFound ()
@@ -65,7 +65,7 @@ void Client::hostFound ()
 
 void Client::stateChanged ( QTcpSocket::SocketState socketState )
 {
-	//emit sigLogger(QString("stateChanged!%1").arg(socketState));
+	emit sigLogger(QObject::tr("stateChanged!%1").arg(socketState));
 }
 
 void Client::readData()
@@ -95,7 +95,7 @@ void Client::readData()
 			if(strlist.size()<2)
 			{
 				//´íÎóµÄÃüÁî£¬¶ªÆú
-				emit sigLogger(QString("Error Command Recv(argument is missed!):%1!").arg(strCmdLine));
+				emit sigLogger(QObject::tr("Error Command Recv(argument is missed!):%1!").arg(strCmdLine));
 				continue;
 			}
 			bool ok;
@@ -106,7 +106,7 @@ void Client::readData()
 			if(!ok)
 			{	
 				//´íÎóµÄÃüÁî£¬¶ªÆú
-				emit sigLogger(QString("Error Command Recv( CmdID is not number!):%1!").arg(strCmdLine));
+				emit sigLogger(QObject::tr("Error Command Recv( CmdID is not number!):%1!").arg(strCmdLine));
 				continue;
 			}
 
@@ -116,7 +116,7 @@ void Client::readData()
 			if(nCmdType==CMD_UNKNOWN)
 			{
 				//´íÎóµÄÃüÁî£¬¶ªÆú
-				emit sigLogger(QString("Error Command Recv( CmdID is not number!):%1!").arg(strCmdLine));
+				emit sigLogger(QObject::tr("Error Command Recv( CmdID is not number!):%1!").arg(strCmdLine));
 				continue;
 			}
 			//ÌáÈ¡ÃüÁîÐ¯´øµÄÊôÐÔ
@@ -178,7 +178,7 @@ int Client::sendData(QByteArray str)
 	}
 	else
 	{
-		emit sigLogger(QString("SEND:%1 fail! server is not connected!").arg(str.data()));
+		emit sigLogger(QObject::tr("SEND:%1 fail! server is not connected!").arg(str.data()));
 		return ERR_NETWORK_CONNECT_FAIL;
 	}
 }

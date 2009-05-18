@@ -183,3 +183,33 @@ PtrFile createFileObject(QString strType)
 	return PtrFile();
 }
 
+PtrFile getFileObjectByUrl(QString strUrl)
+{
+	int from=strUrl.startsWith('/')?1:0;
+	int to=strUrl.indexOf('/');
+	QString strRootDir;
+	if(to==-1)
+		strRootDir=strUrl.mid(from);
+	else
+		strRootDir=strUrl.mid(from,to-from);
+	//TODO：可以在这里根据根目录创建不同的文件对象
+	Synconf *conf=Synconf::instance();
+	QString strLocalUrl=conf->getstr(KEY_SYNCDIR)+strUrl;
+	QFileInfo fi(strLocalUrl);
+	PtrFile pf;
+	if(fi.isDir())
+	{
+		pf=createFileObject("dir");
+	}
+	if(fi.isFile())
+	{
+		pf=createFileObject("file");
+	}
+	if(!pf.isNull())
+	{
+		pf->setUrl(strUrl);
+		pf->setLocalUrl(strLocalUrl);
+	}
+	return pf;
+}
+

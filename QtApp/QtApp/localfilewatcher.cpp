@@ -13,7 +13,7 @@ LocalFileWatcher::LocalFileWatcher(QObject *parent)
 {
 	synconf=Synconf::instance();
 	syncdb=SyncDB::instance();
-	strSyncDirectory=synconf->getstr("sync_dir","C:/download/");
+	strSyncDirectory=synconf->getstr(KEY_SYNCDIR,"C:/download/");
 	timer=new QTimer(this);
 	connect(timer.data(), SIGNAL(timeout()), this, SLOT(heartbeat()));
 	int msec=synconf->getstr("watch_interval","60000").toInt();
@@ -49,15 +49,112 @@ void list_files(QFileInfo fi,QStringList &dirs)
 			list_files(fil[i],dirs);
     }
 }
-
+// #if false
+// void LocalFileWatcher::heartbeat()
+// {
+// 	QStringList dirs_update;
+// 	QStringList dirs_add;
+// 	QStringList dirs_remove;
+// 	QStringList dirs_rename_old;
+// 	QStringList dirs_rename_new;
+// #ifdef USE_SAWATCH
+// 	//获取一个变更记录，注意是取一条少一条
+// 	/*
+// 	typedef struct {
+// 	long ChangeTime;	// utc-time , you must convert it to time_t(local time)  
+// 	char RecordType;	// D=dir F=file 
+// 	char ChangeType;	// (A)dd,(R)emove,(M)odify,(N)ewName 
+// 	char ChangeFile[MAX_PATH];	// dir or filename 
+// 	char NewName[MAX_PATH];		//* if ChangeType=N, it's a new filename or dirname 
+// 	}SaChangeRecord;
+// */
+// 	SaChangeRecord myrecd;
+// 	while(true)
+// 	{
+// 		int nCngCount = GetChange(&myrecd); //获取记录，如果返回小于1， 则表示最近没有变更记录
+// 		if(nCngCount<1)
+// 			break;
+// 		QString strFile=myrecd.ChangeFile;
+// 		strFile.remove(strSyncDirectory);
+// 		strFile.replace('\\','/');
+// 		switch(myrecd.ChangeType)
+// 		{
+// 		case 'A':
+// 			dirs_add.append(strFile);
+// 			break;
+// 		case 'M':
+// 			dirs_update.append(strFile);
+// 			break;
+// 		case 'R':
+// 			dirs_remove.append(strFile);
+// 			break;
+// 		case 'N':
+// 			dirs_rename_old.append(strFile);
+// 			dirs_rename_new.append(myrecd.NewName);
+// 			break;
+// 		default:
+// 			{
+// 				QString strLog;
+// 				strLog="不能识别的文件变化通知："+QString(myrecd.ChangeType)+" / "+myrecd.ChangeFile;
+// 				emit trayLog(strLog);
+// 			}
+// 		}
+// 	}
+// 
+// #else
+// 	QStringList dirs_all;
+//     list_files(QFileInfo(strSyncDirectory),dirs_all);
+// 	ptrfiles=SyncBaseFile::getAllFiles();
+//         for(quint32 i=0;i<(quint32)dirs_all.size();++i)
+// 	{
+// 		QString strUrl=local2url(dirs_all[i]);
+// 		QMap<QString,PtrFile>::iterator it=ptrfiles.find(strUrl);
+// 		QFileInfo qfi(dirs_all[i]);
+// 		if(it==ptrfiles.end())
+// 		{
+// 			dirs_add.append(strUrl);
+// 			PtrFile pf=new SyncBaseFile();
+// 			pf->setLastModifyTime(qfi.lastModified());
+// 			pf->setSize(qfi.size());
+// 			pf->setLocalUrl(qfi.absoluteFilePath());
+// 			pf->setUrl(strUrl);
+// 			pf->flush();
+// 		}
+// 		else
+// 		{
+// 			PtrFile pf=it.value();
+// 			ptrfiles.remove(it.key());
+// 			//qDebug(pf->getLastModifyTime().toString().toStdString().c_str());
+// 			//qDebug(qfi.lastModified().toString().toStdString().c_str());
+// 			if(pf->getLastModifyTime().toString()!=qfi.lastModified().toString())
+// 			{
+// 				dirs_update.append(strUrl);
+// 				pf->setLastModifyTime(qfi.lastModified());
+// 				pf->setSize(qfi.size());
+// 				pf->setLocalUrl(qfi.absoluteFilePath());
+// 				pf->flush();
+// 			}
+// 		}
+// 	}
+// 	QList<QString> ks=ptrfiles.keys();
+// 	for(int i=0;i<ks.size();++i)
+// 	{
+// 		PtrFile pf=ptrfiles[ks[i]];
+// 		dirs_remove.append(ks[i]);
+// 	}
+// #endif
+// 	if(dirs_update.size()>0)
+// 		emit filesChanged(dirs_update);
+// 	if(dirs_add.size()>0)
+// 		emit filesAdded(dirs_add);
+// 	if(dirs_remove.size()>0)
+// 		emit filesRemoved(dirs_remove);
+// 	if(dirs_rename_new.size()>0)
+// 		emit filesRenamed(dirs_rename_old,dirs_rename_new);
+// }
+// #else
 void LocalFileWatcher::heartbeat()
 {
-	QStringList dirs_update;
-	QStringList dirs_add;
-	QStringList dirs_remove;
-	QStringList dirs_rename_old;
-	QStringList dirs_rename_new;
-#ifdef USE_SAWATCH
 	//获取一个变更记录，注意是取一条少一条
 	/*
 	typedef struct {
@@ -67,8 +164,9 @@ void LocalFileWatcher::heartbeat()
 	char ChangeFile[MAX_PATH];	// dir or filename 
 	char NewName[MAX_PATH];		//* if ChangeType=N, it's a new filename or dirname 
 	}SaChangeRecord;
-*/
+	*/
 	SaChangeRecord myrecd;
+	AlertMessageList msgs;
 	while(true)
 	{
 		int nCngCount = GetChange(&myrecd); //获取记录，如果返回小于1， 则表示最近没有变更记录
@@ -77,87 +175,42 @@ void LocalFileWatcher::heartbeat()
 		QString strFile=myrecd.ChangeFile;
 		strFile.remove(strSyncDirectory);
 		strFile.replace('\\','/');
+		AlertMessage msg;
+		int syncop;
 		switch(myrecd.ChangeType)
 		{
-		case 'A':
-			dirs_add.append(strFile);
-			break;
-		case 'M':
-			dirs_update.append(strFile);
-			break;
-		case 'R':
-			dirs_remove.append(strFile);
-			break;
-		case 'N':
-			dirs_rename_old.append(strFile);
-			dirs_rename_new.append(myrecd.NewName);
-			break;
+		case 'A':syncop=SYNC_OP_ADD;break;
+		case 'M':syncop=SYNC_OP_MODIFY;break;
+		case 'R':syncop=SYNC_OP_REMOVE;break;
+		case 'N':syncop=SYNC_OP_RENAME;break;
 		default:
 			{
 				QString strLog;
-				strLog="不能识别的文件变化通知："+QString(myrecd.ChangeType)+" / "+myrecd.ChangeFile;
+				strLog=QObject::tr("Can't identify the Alert Message")+QString(myrecd.ChangeType)+" / "+myrecd.ChangeFile;
 				emit trayLog(strLog);
+				continue;
 			}
 		}
+		msg[KEY_URL]=myrecd.ChangeFile;
+		msg[KEY_ACTION_TYPE]=QString::number(syncop);
+		if(syncop==SYNC_OP_RENAME)
+			msg[KEY_URL_NEW]=myrecd.NewName;
+		msgs.push_back(msg);
 	}
-
-#else
-	QStringList dirs_all;
-    list_files(QFileInfo(strSyncDirectory),dirs_all);
-	ptrfiles=SyncBaseFile::getAllFiles();
-        for(quint32 i=0;i<(quint32)dirs_all.size();++i)
+	if(msgs.size()>0)
 	{
-		QString strUrl=local2url(dirs_all[i]);
-		QMap<QString,PtrFile>::iterator it=ptrfiles.find(strUrl);
-		QFileInfo qfi(dirs_all[i]);
-		if(it==ptrfiles.end())
-		{
-			dirs_add.append(strUrl);
-			PtrFile pf=new SyncBaseFile();
-			pf->setLastModifyTime(qfi.lastModified());
-			pf->setSize(qfi.size());
-			pf->setLocalUrl(qfi.absoluteFilePath());
-			pf->setUrl(strUrl);
-			pf->flush();
-		}
-		else
-		{
-			PtrFile pf=it.value();
-			ptrfiles.remove(it.key());
-			//qDebug(pf->getLastModifyTime().toString().toStdString().c_str());
-			//qDebug(qfi.lastModified().toString().toStdString().c_str());
-			if(pf->getLastModifyTime().toString()!=qfi.lastModified().toString())
-			{
-				dirs_update.append(strUrl);
-				pf->setLastModifyTime(qfi.lastModified());
-				pf->setSize(qfi.size());
-				pf->setLocalUrl(qfi.absoluteFilePath());
-				pf->flush();
-			}
-		}
+		StringMap props;
+		props[KEY_SENDER]="local_file_watcher";
+		props[KEY_SYNCDIR]=QString::number(SYNC_TO_SERVER);
+		emit alertMessage(props,msgs);
 	}
-	QList<QString> ks=ptrfiles.keys();
-	for(int i=0;i<ks.size();++i)
-	{
-		PtrFile pf=ptrfiles[ks[i]];
-		dirs_remove.append(ks[i]);
-	}
-#endif
-	if(dirs_update.size()>0)
-		emit filesChanged(dirs_update);
-	if(dirs_add.size()>0)
-		emit filesAdded(dirs_add);
-	if(dirs_remove.size()>0)
-		emit filesRemoved(dirs_remove);
-	if(dirs_rename_new.size()>0)
-		emit filesRenamed(dirs_rename_old,dirs_rename_new);
 }
-
+//#endif
 
 QString LocalFileWatcher::local2url(QString strLocal)
 {
 	Synconf *synconf=Synconf::instance();
-	QString strSyncDirectory=synconf->getstr("sync_dir","C:/download/");
+	QString strSyncDirectory=synconf->getstr(KEY_SYNCDIR,"C:/download/");
 	QString strTemp=strLocal.replace('\\','/');
 	if(strTemp.startsWith(strSyncDirectory,Qt::CaseInsensitive))
 	{
@@ -165,7 +218,7 @@ QString LocalFileWatcher::local2url(QString strLocal)
 	}
 	else
 	{
-		qDebug("错误的本地目录：%s",strTemp.toStdString().c_str());
+		qDebug("Wrong Local Directory:%s",strTemp.toStdString().c_str());
 	}
 	
 	//if(!strTemp.startsWith("/home/wujunping/testfold/"))
