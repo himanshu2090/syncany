@@ -7,7 +7,7 @@ QMutex g_locker_db;
 SyncDB::SyncDB(QObject *parent)
 	: QObject(parent)
 {
-	m_dbFile=Synconf::instance()->getstr("work_dir")+"syncdb.db3";
+	m_dbFile=Synconf::instance()->getstr(KEY_WORK_DIR)+"syncdb.db3";
 	m_db.open(m_dbFile.toStdString().c_str());
 	createTable();
 }

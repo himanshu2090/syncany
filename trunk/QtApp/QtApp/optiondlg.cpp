@@ -8,7 +8,7 @@ OptionDlg::OptionDlg(QWidget *parent)
 	synconf->save_conf();
 	//此时应该连接关注synconf的keychanged事件
 
-	QFile qf(synconf->getstr("work_dir")+"/synconf.ini");
+	QFile qf(synconf->getstr(KEY_WORK_DIR)+"/synconf.ini");
 	qf.open(QFile::ReadOnly);
 	QByteArray buf=qf.readAll();
 	qf.close();
@@ -30,7 +30,7 @@ void OptionDlg::on_pushButtonOptionCancel_clicked()
 
 void OptionDlg::on_pushButtonOptionOK_clicked()
 {
-	QFile qf(synconf->getstr("work_dir")+"/synconf.ini");
+	QFile qf(synconf->getstr(KEY_WORK_DIR)+"/synconf.ini");
 	qf.open(QFile::Truncate|QFile::ReadWrite);
 	qf.write(ui.plainTextEdit->toPlainText().toLocal8Bit());
 	qf.close();

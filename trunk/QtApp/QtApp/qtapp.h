@@ -37,6 +37,7 @@ private:
 	QAction *showEventListAction;
 	QMutex m_locker_log;
 private slots:
+	void on_btnBrowseSyncdirectory_clicked();
 	void on_pushButtonDecode_clicked();
 	void on_pushButtonQuit_clicked();
 	void on_pushButtonSettings_clicked();
@@ -44,7 +45,6 @@ private slots:
 	void on_pushButtonSetAccount_clicked();
 	void on_pushButton_3_clicked();
 	void on_pushButton_Test_Put_Get_clicked();
-	void on_pushButton_2_clicked();
 	void on_btnDisconnect_clicked();
 	void on_btnConnect_clicked();
 	void on_btnClear_clicked();
@@ -55,10 +55,7 @@ public slots:
 	void login(QString str);
 	void logout(QString str);
 
-	void local_files_changed(QStringList &strFiles);
-	void local_files_added(QStringList &strFiles);
-	void local_files_removed(QStringList &strFiles);
-	
+	void recvAlertMessage(StringMap alert_props,AlertMessageList msglist);
 	//任务栏被激活
 	void trayActived(QSystemTrayIcon::ActivationReason );
 	void trayMessage(QString strTitle,QString strInfo);

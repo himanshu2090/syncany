@@ -3,48 +3,75 @@
 #include <exception>
 using namespace std;
 
-class MyApp:public QApplication
-{
-public: 
-
-	MyApp(int _argc, char **_argv): QApplication(_argc, _argv)
-	{ 
-
-	}
-	//bool notify(QObject *receiver, QEvent *e)
-	//{
-
-	//	qDebug( "Notify()!" );
-
-	//	return false;
-
-	//} 
-
-};
+//class MyApp:public QApplication
+//{
+//public: 
+//
+//	MyApp(int _argc, char **_argv): QApplication(_argc, _argv)
+//	{ 
+//
+//	}
+//	//bool notify(QObject *receiver, QEvent *e)
+//	//{
+//
+//	//	qDebug( "Notify()!" );
+//
+//	//	return false;
+//
+//	//} 
+//
+//};
 int main(int argc, char *argv[])
 {
-	QTextCodec *codec=QTextCodec::codecForName("GB18030");
-	QTextCodec::setCodecForLocale(codec);
-	QTextCodec::setCodecForTr(codec);
-	QTextCodec::setCodecForCStrings(codec);
 	try{
-		MyApp a(argc, argv);
-		//QDialog ( QWidget * parent = 0, Qt::WindowFlags f = 0 )
+		QApplication a(argc, argv);
+		QTextCodec *codec=QTextCodec::codecForName("GBK");
+		if(codec==null)
+		{
+			codec=QTextCodec::codecForLocale();
+			QFile qf(QDir::currentPath()+"/test.txt");
+			qf.open(QIODevice::Truncate|QIODevice::ReadWrite);
+			qf.write(QByteArray("error codec,use codec:")+codec->name()+"\n");
+			QList<QByteArray> alias=codec->aliases();
+			for(int i=0;i<alias.size();++i)
+			{
+				qf.write(alias[i]+"\n");
+			}
+			qf.close();
+		}
+		QTextCodec::setCodecForLocale(codec);
+		QTextCodec::setCodecForTr(codec);
+		QTextCodec::setCodecForCStrings(codec);
+
+		QTranslator sys_translator;
+		sys_translator.load("qt_zh_CN");
+		qApp->installTranslator(&sys_translator);
+
+		QTranslator translator;
+		if(!translator.load("qtapp_zh"))
+		{
+			QFile qf(QDir::currentPath()+"/test.txt");
+			qf.open(QIODevice::Truncate|QIODevice::ReadWrite);
+			qf.write(QByteArray("error load qtapp_zh.qm\n"));
+			qf.close();
+		}
+		qApp->installTranslator(&translator);
+
 		QtApp w(null,Qt::CustomizeWindowHint  | Qt::WindowTitleHint | Qt::WindowSystemMenuHint);
 		w.show();
 		return a.exec();
 	}
 	catch(CppSQLite3Exception &e)
 	{
-		qDebug("进程发生异常，崩溃退出[%d/%s]%s\n",e.errorCode(),e.errorCodeAsString(e.errorCode()),e.errorMessage());
+		qDebug("Sqlite3Exception crashed! [%d/%s]%s\n",e.errorCode(),e.errorCodeAsString(e.errorCode()),e.errorMessage());
 	}
 	catch(exception &e)
 	{
-		qDebug("进程发生异常，崩溃退出[%s]\n",e.what());
+		qDebug("Unknown crashed! [%s]\n",e.what());
 	}
 	catch(...)
 	{
-		qDebug("进程发生异常，崩溃退出\n");
+		qDebug("Crashed !!!!\n");
 	}
         return ERR_NONE;
 }

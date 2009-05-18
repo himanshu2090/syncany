@@ -23,7 +23,9 @@ public:
 	static Synconf *instance();
 	static QString getOsVersionString();
 	QString getstr(QString strKey,QString strDefault=""); //获取配置项内容
+	quint32 getint(QString strKey,int nDefault=0); //获取配置项内容
 	void setstr(QString strKey,QString strValue,bool flush=false); //设置配置项
+	void setint(QString strKey,quint32 nValue,bool flush=false); //设置配置项
 
 	QString getinfo(QString strKey);//一些只读信息的获取
 signals:

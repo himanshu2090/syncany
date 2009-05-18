@@ -75,9 +75,13 @@ void Synconf::save_conf()
 
 void Synconf::init_default()//将有默认值但未设置的项设置为默认值
 {
-	if(m_config.find("work_dir")==m_config.end())
-		m_config["work_dir"]=QDir::currentPath()+"/";
-	
+	if(m_config.find(KEY_WORK_DIR)==m_config.end())
+		m_config[KEY_WORK_DIR]=QDir::currentPath()+"/";
+	QFileInfo fi(m_config[KEY_WORK_DIR]);
+	if(!fi.exists())
+	{
+		m_config[KEY_WORK_DIR]=QDir::currentPath()+"/";
+	}
 }
 
 QString Synconf::getstr(QString strKey,QString strDefault)//获取配置项内容
@@ -90,12 +94,28 @@ QString Synconf::getstr(QString strKey,QString strDefault)//获取配置项内容
 	return m_config[strKey];
 }
 
+quint32 Synconf::getint(QString strKey,int nDefault)//获取配置项内容
+{
+	QString str=getstr(strKey);
+	if(str=="")
+	{
+		setint(strKey,nDefault);
+		return nDefault;
+	}
+	return str.toInt();
+}
+
 void Synconf::setstr(QString strKey,QString strValue,bool flush) //设置配置项
 {
 	emit keyChanged(strKey);
 	m_config[strKey]=strValue;
 	if(flush)
 		save_conf();
+}
+
+void Synconf::setint(QString strKey,quint32 nValue,bool flush)
+{
+	setstr(strKey,QString::number(nValue),flush);
 }
 
 QString Synconf::getOsVersionString()

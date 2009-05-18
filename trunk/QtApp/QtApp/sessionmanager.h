@@ -30,6 +30,8 @@ public slots:
 	int send_data(CommandMap mapCmdLine,QByteArray buffer);
 	void recv_data(Client *,quint32 nCmdID,QString strCmdStr,QString strCmdLine,CommandMap props,QByteArray buffer);
 
+	void ConfigChanged(QString key);
+
 public:
 	int say_ping(Client *cl);
 	int say_hello(Client *cl);
@@ -46,6 +48,7 @@ public:
 	QList<PtrFile> ls_file(QString strUrl);
 	quint32 put_file(PtrFile pf);
 	quint32 rm_file(PtrFile pf);
+	quint32 get_file(QString strUrl);
 private:
 	void dispatch_task(); //将未完成的任务分法给客户端的其他模块来完成
 	void resend_cmd();//将未发送的命令重新发送
@@ -57,15 +60,16 @@ private:
 	SyncDB *syncdb;
 	Synconf *synconf;
 	QPointer<QTimer> timer;
-	quint32 heartbeat_count;
 	quint32 heartbeat_interval;
 	QMutex m_locker; //普通锁，同步对自身资源的操作
 	QMutex m_locker_cmdid; //同步锁，控制cmdid的产生
 	int ping_cmdid;
 	QDateTime ping_acktime;
-        quint32 timeout_secs;
+	QDateTime ping_sendtime;
+	quint32 timeout_secs;
 	Client *ping_cl;
 	QString strTempDirectory;
+
 
 public:
 	Client client;

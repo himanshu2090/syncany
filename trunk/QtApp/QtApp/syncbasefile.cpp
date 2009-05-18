@@ -208,7 +208,7 @@ PtrFile SyncBaseFile::getFileByUrl(QString strUrl)
 	pf->setUrl(strUrl);
 	if(rs.size()==0)
 	{
-		pf->setLocalUrl(Synconf::instance()->getstr("sync_dir")+strUrl);
+		pf->setLocalUrl(Synconf::instance()->getstr(KEY_SYNCDIR)+strUrl);
 		return pf;
 	}
 	pf->setLocalUrl(rs["filename"]);

@@ -12,8 +12,8 @@ QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 	syncdb=SyncDB::instance();
 	synconf=Synconf::instance();
 	el=EventList::instance();
-	QString svrhost=synconf->getstr("server_host","5.152.69.23");
-	QString svrport=synconf->getstr("server_port","18120");
+	QString svrhost=synconf->getstr(KEY_SERVER_IP,"5.152.69.23");
+	QString svrport=synconf->getstr(KEY_SERVER_PORT,"18120");
 
 	QString strUser=synconf->getstr("user_id");
 	QString strPass=synconf->getstr("user_password");
@@ -21,17 +21,20 @@ QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 	ui.lineEditUser->setText(strUser);
 	ui.lineEditPassword->setText(strPass);
 
-	synconf->setstr("server_host",svrhost);
-	synconf->setstr("server_port",svrport,true);
+	synconf->setstr(KEY_SERVER_IP,svrhost);
+	synconf->setstr(KEY_SERVER_PORT,svrport,true);
 	ui.textHost->setText(svrhost);
 	ui.textPort->setText(svrport);
+
+	ui.txtSyncDirectory->setText(synconf->getstr(KEY_SYNCDIR,QDir::homePath()));
+
 	sm=new SessionManager(this);
 	watcher=new LocalFileWatcher(this);
 	eventDlg=new EventListDlg(this,Qt::CustomizeWindowHint  | Qt::WindowTitleHint | Qt::WindowSystemMenuHint);
-	connect(watcher.data(),SIGNAL(filesChanged(QStringList &)),this,SLOT(local_files_changed(QStringList &)));
-	connect(watcher.data(),SIGNAL(filesAdded(QStringList &)),this,SLOT(local_files_added(QStringList &)));
-	connect(watcher.data(),SIGNAL(filesRemoved(QStringList &)),this,SLOT(local_files_removed(QStringList &)));
-	
+
+	connect(watcher.data(),SIGNAL(alertMessage(StringMap,AlertMessageList)),this,SLOT(recvAlertMessage(StringMap,AlertMessageList)));
+	connect(sm.data(),SIGNAL(alertMessage(StringMap,AlertMessageList)),this,SLOT(recvAlertMessage(StringMap,AlertMessageList)));
+
 	createActions();
 	createTrayIcon();
 
@@ -40,13 +43,14 @@ QtApp::QtApp(QWidget *parent, Qt::WFlags flags)
 
 	connect(sm.data(),SIGNAL(trayMessage(QString ,QString )),this,SLOT(trayMessage(QString ,QString)));
 
-	trayMessage("SyncAny提示","双击显示窗口，单击激活窗口，右键菜单选择“退出”结束运行");
+	trayMessage(QObject::tr("SyncAny Alert!"),QObject::tr("Double click to show MainWindow.\nSingle click to active MainWindow.\nRight click to show ContentMenu!\nClick 'Quit' to terminate program!"));
 }
 
 void QtApp::createActions()
 {
 	quitAction = new QAction(tr("&Quit"), this);
 	quitAction->setIcon(QIcon(":/QtApp/QtApp.ico"));
+	//quitAction->setIcon(QIcon("QtApp.ico"));
 	connect(quitAction, SIGNAL(triggered()), this, SLOT(trigger_quit()));
 	showEventListAction = new QAction(tr("Show/Hide EventList"),this);
 	connect(showEventListAction,SIGNAL(triggered()),this,SLOT(trigger_showEventList()));
@@ -62,8 +66,9 @@ void QtApp::createTrayIcon()
 	trayIcon = new QSystemTrayIcon(this);
 	trayIcon->setContextMenu(trayMenu);
 	QIcon icon=QIcon(":/QtApp/QtApp.ico");//QIcon(".\\QtApp.ico");
+	//QIcon icon=QIcon("QtApp.ico");//QIcon(".\\QtApp.ico");
 	trayIcon->setIcon(icon);
-	trayIcon->setToolTip("SyncAny Client Tray");
+	trayIcon->setToolTip(QObject::tr("SyncAny Client Tray"));
 	trayIcon->show();
 
 	connect(trayIcon,SIGNAL(activated ( QSystemTrayIcon::ActivationReason  )),this,SLOT(trayActived(QSystemTrayIcon::ActivationReason )));
@@ -130,8 +135,8 @@ QtApp::~QtApp()
 void QtApp::on_pushButton_clicked()
 {
 	//ui.textLogger->append("Hi,I'v been clicked!");
-	synconf->setstr("server_host",ui.textHost->text());
-	synconf->setstr("server_port",ui.textPort->text());
+	synconf->setstr(KEY_SERVER_IP,ui.textHost->text());
+	synconf->setstr(KEY_SERVER_PORT,ui.textPort->text());
 }
 
 void QtApp::on_btnSend_clicked()
@@ -151,11 +156,11 @@ void QtApp::on_btnClear_clicked()
 void QtApp::log(QString str)
 {
 	QMutexLocker autolocker(&m_locker_log);
-	QString strFilename=synconf->getstr("work_dir")+"/"+QDateTime::currentDateTime().toString(QString("yyyy-MM-dd"))+".txt";
+	QString strFilename=synconf->getstr(KEY_WORK_DIR)+"/"+QDateTime::currentDateTime().toString(QString("yyyy-MM-dd"))+".txt";
 	QFile qf(strFilename);
 	qf.open(QIODevice::Append);
 	QString so=QDateTime::currentDateTime().toString(QString("yyyy-MM-dd hh:mm:ss : ")) +"LOG:"+str.trimmed();
-	qf.write((so+"\n").toLocal8Bit());
+	qf.write((so+"\r\n").toLocal8Bit());
 	qf.close();
 	ui.textLoggerIn->append(so);
 }
@@ -163,7 +168,7 @@ void QtApp::log(QString str)
 void QtApp::login(QString str)
 {
 	QString so="<<:"+str.trimmed();
-	QString strFilename=synconf->getstr("work_dir")+"/"+QDateTime::currentDateTime().toString(QString("yyyy-MM-dd"))+".txt";
+	QString strFilename=synconf->getstr(KEY_WORK_DIR)+"/"+QDateTime::currentDateTime().toString(QString("yyyy-MM-dd"))+".txt";
 	QFile qf(strFilename);
 	qf.open(QIODevice::Append);
 	so=QDateTime::currentDateTime().toString(QString("yyyy-MM-dd hh:mm:ss : ")) +so;
@@ -175,7 +180,7 @@ void QtApp::login(QString str)
 void QtApp::logout(QString str)
 {
 	QString so=">>:"+str.trimmed();
-	QString strFilename=synconf->getstr("work_dir")+"/"+QDateTime::currentDateTime().toString(QString("yyyy-MM-dd"))+".txt";
+	QString strFilename=synconf->getstr(KEY_WORK_DIR)+"/"+QDateTime::currentDateTime().toString(QString("yyyy-MM-dd"))+".txt";
 	QFile qf(strFilename);
 	qf.open(QIODevice::Append);
 	so=QDateTime::currentDateTime().toString(QString("yyyy-MM-dd hh:mm:ss : ")) +so;
@@ -193,11 +198,6 @@ void QtApp::on_btnConnect_clicked()
 void QtApp::on_btnDisconnect_clicked()
 {
 	sm->DisconnectHost();
-}
-
-void QtApp::on_pushButton_2_clicked()
-{
-
 }
 
 
@@ -264,7 +264,7 @@ void QtApp::on_pushButtonSetAccount_clicked()
 	}
 	else
 	{
-		if(QMessageBox::question(this,"更换帐号？","你已经在这台设备上注册了帐号"+synconf->getstr("user_id")+"，你确定要更换帐号吗？（更换帐号会抹除你的设备注册信息）",QMessageBox::Yes|QMessageBox::No,QMessageBox::No)== QMessageBox::Yes)
+		if(QMessageBox::question(this,QObject::tr("change account?"),QObject::tr("Your device has logined with the account:")+synconf->getstr("user_id")+QObject::tr(",do you realy want change your account?(it'll erase all your old account informations!"),QMessageBox::Yes|QMessageBox::No,QMessageBox::No)== QMessageBox::Yes)
 		{
 			synconf->setstr(KEY_SESSION_ID,"");
 			synconf->setstr(KEY_DEVICE_ID,"");
@@ -291,7 +291,7 @@ void QtApp::on_pushButtonRegister_clicked()
 	}
 	else
 	{
-		if(QMessageBox::question(this,"重新注册？","你已经在这台设备上注册了帐号"+synconf->getstr("user_id")+"，你确定要重新注册吗？（重新注册会抹除你的设备注册信息）",QMessageBox::Yes|QMessageBox::No,QMessageBox::No)== QMessageBox::Yes)
+		if(QMessageBox::question(this,QObject::tr("register again?"),QObject::tr("Your device has logined with the account:")+synconf->getstr("user_id")+QObject::tr(",do you realy want change your account?(it'll erase all your old account informations!"),QMessageBox::Yes|QMessageBox::No,QMessageBox::No)== QMessageBox::Yes)
 		{
 			synconf->setstr(KEY_SESSION_ID,"");
 			synconf->setstr(KEY_DEVICE_ID,"");
@@ -341,62 +341,133 @@ void QtApp::timerEvent(QTimerEvent *event)
 	}
 }
 
+//
+//void QtApp::local_files_changed(QStringList & strFiles)
+//{
+//	QString str;
+//	for(int i=0;i<strFiles.size();++i)
+//	{
+//		str.append(strFiles[i]);
+//		str.append("\n");
+//		QList<PtrFile> rpf=sm->ls_file(strFiles[i]);//根据URL
+//		PtrFile pf=SyncBaseFile::getFileByUrl(strFiles[i]);
+//		if(rpf[0]->getAnchor() < pf->getAnchor())
+//		{
+//			el->insertEvent(pf,SYNC_TO_SERVER,SYNC_OP_MODIFY);
+//			sm->put_file(pf);
+//		}
+//		else
+//		{
+//			QString strInfo=rpf[0]->getUrl()+"出现文件冲突！本地锚点"+QString::number(pf->getAnchor())+"与服务器锚点"+QString::number(rpf[0]->getAnchor())+"不一致!";
+//			QMessageBox(QMessageBox::NoIcon,"文件冲突！",strInfo).exec();
+//		}
+//	}
+//	
+//	if(str!="")
+//		log("Changed:"+str);
+//}
+//void QtApp::local_files_added(QStringList & strFiles)
+//{
+//	QString str;
+//	for(int i=0;i<strFiles.size();++i)
+//	{
+//		str.append(strFiles[i]);
+//		str.append("\n");
+//		//PtrFile pf=SyncBaseFile::getFileByUrl(strFiles[i]);
+//		PtrFile pf=new SyncBaseFile();
+//		pf->setLocalUrl(synconf->getstr(KEY_SYNCDIR)+strFiles[i]);
+//		pf->setUrl(strFiles[i]);
+//		el->insertEvent(pf,SYNC_TO_SERVER,SYNC_OP_ADD);
+//		sm->put_file(pf);
+//	}
+//
+//	if(str!="")
+//		log("Added:"+str);
+//}
+//void QtApp::local_files_removed(QStringList & strFiles)
+//{
+//	QString str;
+//	for(int i=0;i<strFiles.size();++i)
+//	{
+//		str.append(strFiles[i]);
+//		str.append("\n");
+//		PtrFile pf=SyncBaseFile::getFileByUrl(strFiles[i]);
+//		el->insertEvent(pf,SYNC_TO_SERVER,SYNC_OP_REMOVE);
+//		sm->rm_file(pf);
+//	}
+//
+//	if(str!="")
+//		log("Removed:"+str);
+//}
 
-void QtApp::local_files_changed(QStringList & strFiles)
+void QtApp::recvAlertMessage(StringMap alert_props,AlertMessageList msglist)
 {
-	QString str;
-	for(int i=0;i<strFiles.size();++i)
+	int syncdir=alert_props[KEY_SYNCDIR].toInt();
+	if(syncdir != SYNC_TO_SERVER && syncdir!= SYNC_FROM_SERVER)
+		return ;
+	if(syncdir == SYNC_TO_SERVER)
 	{
-		str.append(strFiles[i]);
-		str.append("\n");
-		QList<PtrFile> rpf=sm->ls_file(strFiles[i]);//根据URL
-		PtrFile pf=SyncBaseFile::getFileByUrl(strFiles[i]);
-		if(rpf[0]->getAnchor() < pf->getAnchor())
+		for(int i=0;i<msglist.size();++i)
 		{
-			el->insertEvent(pf,SYNC_TO_SERVER,SYNC_OP_MODIFY);
-			sm->put_file(pf);
+			AlertMessage msg=msglist[i];
+			PtrFile ptrfile=getFileObjectByUrl(msg[KEY_URL]);
+			if(ptrfile.isNull())
+				continue;
+			switch(msg[KEY_ACTION_TYPE].toInt())
+			{
+			case SYNC_OP_ADD:
+			case SYNC_OP_MODIFY:
+				sm->put_file(ptrfile);
+				break;
+			case SYNC_OP_REMOVE:
+				sm->rm_file(ptrfile);
+				break;
+			case SYNC_OP_RENAME:
+				//sm->mv_file(ptrfile,msg[KEY_URL_NEW]);
+				break;
+			default:
+				continue;
+			}
 		}
-		else
+	}
+	else
+	{
+		for(int i=0;i<msglist.size();++i)
 		{
-			QString strInfo=rpf[0]->getUrl()+"出现文件冲突！本地锚点"+QString::number(pf->getAnchor())+"与服务器锚点"+QString::number(rpf[0]->getAnchor())+"不一致!";
-			QMessageBox(QMessageBox::NoIcon,"文件冲突！",strInfo).exec();
+			AlertMessage msg=msglist[i];
+			switch(msg[KEY_ACTION_TYPE].toInt())
+			{
+			case SYNC_OP_ADD:
+			case SYNC_OP_MODIFY:
+				sm->get_file(msg[KEY_URL]);
+				break;
+			case SYNC_OP_REMOVE:
+				//rm local file
+				break;
+			case SYNC_OP_RENAME:
+				break;
+			default:
+				continue;
+			}
 		}
 	}
-	
-	if(str!="")
-		log("Changed:"+str);
 }
-void QtApp::local_files_added(QStringList & strFiles)
-{
-	QString str;
-	for(int i=0;i<strFiles.size();++i)
-	{
-		str.append(strFiles[i]);
-		str.append("\n");
-		//PtrFile pf=SyncBaseFile::getFileByUrl(strFiles[i]);
-		PtrFile pf=new SyncBaseFile();
-		pf->setLocalUrl(synconf->getstr("sync_dir")+strFiles[i]);
-		pf->setUrl(strFiles[i]);
-		el->insertEvent(pf,SYNC_TO_SERVER,SYNC_OP_ADD);
-		sm->put_file(pf);
-	}
 
-	if(str!="")
-		log("Added:"+str);
-}
-void QtApp::local_files_removed(QStringList & strFiles)
-{
-	QString str;
-	for(int i=0;i<strFiles.size();++i)
-	{
-		str.append(strFiles[i]);
-		str.append("\n");
-		PtrFile pf=SyncBaseFile::getFileByUrl(strFiles[i]);
-		el->insertEvent(pf,SYNC_TO_SERVER,SYNC_OP_REMOVE);
-		sm->rm_file(pf);
-	}
 
-	if(str!="")
-		log("Removed:"+str);
+
+void QtApp::on_btnBrowseSyncdirectory_clicked()
+{
+	QString strDir=ui.txtSyncDirectory->text();
+	if(strDir=="" || !QFileInfo(strDir).exists())
+		strDir=synconf->getstr(KEY_SYNCDIR);
+	strDir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
+		strDir,
+		QFileDialog::ShowDirsOnly
+		| QFileDialog::DontResolveSymlinks);
+	if(strDir!="" && QFileInfo(strDir).exists() && QFileInfo(strDir).isDir())
+	{
+		synconf->setstr(KEY_SYNCDIR,strDir);
+		ui.txtSyncDirectory->setText(strDir);
+	}
 }
 

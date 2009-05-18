@@ -23,10 +23,10 @@ private:
 	Synconf *synconf;
 
 public slots:
-	void itemClicked ( QTreeWidgetItem * item );
-	void itemDoubleClicked ( QTreeWidgetItem * item );
-	void itemEntered ( QTreeWidgetItem * item );
-	void itemPressed ( QTreeWidgetItem * item );
+	void itemClicked ( QTreeWidgetItem * item ,int col );
+	void itemDoubleClicked ( QTreeWidgetItem * item  ,int col);
+	void itemEntered ( QTreeWidgetItem * item ,int col );
+	void itemPressed ( QTreeWidgetItem * item ,int col );
 
 };
 
